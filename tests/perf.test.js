@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
-import * as perf from "../src/lib/perf.js";
-import { computeLayout } from "../src/lib/render.js";
+import * as perf from "../src/lib/perf.ts";
+import { computeLayout } from "../src/lib/render.ts";
 
 perf.reset();
 

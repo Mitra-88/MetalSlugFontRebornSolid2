@@ -1,6 +1,6 @@
 # MetalSlugFontRebornWeb
 
-Web app version of [MetalSlugFontReborn](https://github.com/Mitra-88/MetalSlugFontReborn). _This branch reimplements it to run entirely client-side, rebuilt with Solid.js, Vite and Tailwind CSS, styled after Material Design 3_
+Web app version of [MetalSlugFontReborn](https://github.com/Mitra-88/MetalSlugFontReborn). _This branch reimplements it to run entirely client-side on Solid 2 (TypeScript), Vite and Tailwind CSS, styled after Material Design 3_
 
 ## 🚀 Demo
 
@@ -12,7 +12,7 @@ Visit the live instance: [https://vermeil.pythonanywhere.com](https://vermeil.py
 - Reliable by design: sprite loads have timeouts and automatic retries, failures offer a one-click retry, and the character support lists are machine-verified against the sprite files on every test run.
 - Material 3 design system hand-rolled with Tailwind tokens: three seed palettes (Amber Forge, Verdant, Azure) each with full light and dark schemes, M3 color roles, type scale, shape and expressive spring motion.
 - Fast by construction: sprites decode once into GPU bitmaps via `createImageBitmap`, layouts are memoized per text, the rest of the font warms up during idle time, and a built-in sampling profiler shows render phase timings (load, layout, draw) with p50/p95 stats right in the preview panel.
-- Adaptive layout for desktop and mobile, no router, no server, ~18 KB gzipped of app code and CSS.
+- Adaptive layout for desktop and mobile, no router, no server.
 
 ## 📁 Project Structure
 
@@ -27,19 +27,21 @@ Visit the live instance: [https://vermeil.pythonanywhere.com](https://vermeil.py
 │       └── icons/        # App icons and favicon
 ├── src/
 │   ├── lib/
-│   │   ├── fonts.js      # Font metadata, character mapping, path builder
-│   │   ├── render.js     # Bitmap cache, idle preloading, layout memo, canvas drawing
-│   │   └── perf.js       # Sampling profiler for the render pipeline
+│   │   ├── fonts.ts      # Font metadata, character mapping, path builder
+│   │   ├── render.ts     # Bitmap cache, idle preloading, layout memo, canvas drawing
+│   │   ├── perf.ts       # Sampling profiler for the render pipeline
+│   │   └── icons.tsx     # Locally defined lucide icon glyphs
 │   ├── pages/
-│   │   ├── Generator.jsx # Controls, live preview, profiler panel, download
-│   │   ├── Examples.jsx
-│   │   └── Supported.jsx
-│   ├── Page.jsx          # App bar, page shell, theme toggle
+│   │   ├── Generator.tsx # Controls, live preview, profiler panel, download
+│   │   ├── Examples.tsx
+│   │   └── Supported.tsx
+│   ├── Page.tsx          # App bar, page shell, theme toggle
 │   ├── index.css         # Material 3 design system (Tailwind v4 tokens)
-│   └── *.jsx             # Entry points per page
+│   └── *.tsx             # Entry points per page
 └── tests/
     ├── layout.test.js    # Self-check for layout and character logic
-    └── perf.test.js      # Profiler math + layout benchmark
+    ├── perf.test.js      # Profiler math + layout benchmark
+    └── sprites.test.js   # Verifies support lists against sprite files
 ```
 
 ## 🔧 Installation
@@ -71,9 +73,10 @@ npm run preview
 
 The build outputs static HTML/JS/CSS into `dist/` with relative paths, ready to drop onto GitHub Pages, Netlify, Cloudflare Workers or any static host (or bundle into a Tauri shell).
 
-### Self-checks
+### Type check and self-checks
 
 ```
+npm run typecheck
 npm test
 ```
 

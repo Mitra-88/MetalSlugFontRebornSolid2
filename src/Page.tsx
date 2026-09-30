@@ -1,9 +1,11 @@
 import { For, Show, createSignal } from "solid-js";
-import { ArrowLeft, Check, Moon, Palette, Sun } from "lucide-solid";
+import type { JSX } from "@solidjs/web";
+import { ArrowLeft, Check, Moon, Palette, Sun } from "./lib/icons.tsx";
+import type { ColorName } from "./lib/fonts.ts";
 
-export const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+export const capitalize = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1);
 
-export const COLOR_HEX = {
+export const COLOR_HEX: Record<ColorName, string> = {
     blue: "#4d8dff",
     orange: "#ff8c1a",
     gold: "#e8b93b",
@@ -14,35 +16,37 @@ export const PALETTES = [
     { id: "amber", label: "Amber Forge", dot: "#964e00" },
     { id: "verdant", label: "Verdant", dot: "#386a20" },
     { id: "azure", label: "Azure", dot: "#415f91" },
-];
+] as const;
 
-const SCHEME_TINTS = {
+const SCHEME_TINTS: Record<string, [string, string]> = {
     amber: ["#fff8f2", "#17120c"],
     verdant: ["#f8faf0", "#11140c"],
     azure: ["#f9f9ff", "#111318"],
 };
 
-function applyThemeColorMeta(theme) {
+function applyThemeColorMeta(theme: string): void {
     const palette = document.documentElement.dataset.palette ?? "amber";
     const tint = SCHEME_TINTS[palette]?.[theme === "light" ? 0 : 1];
-    document.querySelector('meta[name="theme-color"]')?.setAttribute("content", tint);
+    document.querySelector('meta[name="theme-color"]')?.setAttribute("content", tint ?? "");
 }
 
-export function ColorDot(props) {
-    return <span class="color-dot" style={{ background: COLOR_HEX[props.color] ?? "var(--m3-outline)" }} />;
-}
-
-function withThemeTransition(apply) {
+function withThemeTransition(apply: () => void): void {
     const root = document.documentElement;
     root.classList.add("theme-fade");
     apply();
     setTimeout(() => root.classList.remove("theme-fade"), 450);
 }
 
-export function ThemeToggle() {
-    const [theme, setTheme] = createSignal(document.documentElement.dataset.theme === "light" ? "light" : "dark");
+export function ColorDot(props: { color: ColorName }): JSX.Element {
+    return <span class="color-dot" style={{ background: COLOR_HEX[props.color] ?? "var(--m3-outline)" }} />;
+}
 
-    const toggle = () => {
+export function ThemeToggle(): JSX.Element {
+    const [theme, setTheme] = createSignal<"light" | "dark">(
+        document.documentElement.dataset.theme === "light" ? "light" : "dark"
+    );
+
+    const toggle = (): void => {
         const next = theme() === "dark" ? "light" : "dark";
         withThemeTransition(() => {
             document.documentElement.dataset.theme = next;
@@ -61,17 +65,17 @@ export function ThemeToggle() {
     );
 }
 
-export function PaletteMenu() {
+export function PaletteMenu(): JSX.Element {
     const [open, setOpen] = createSignal(false);
     const stored = document.documentElement.dataset.palette ?? "amber";
     const [current, setCurrent] = createSignal(PALETTES.some((p) => p.id === stored) ? stored : "amber");
 
-    const pick = (id) => {
+    const pick = (id: string): void => {
         withThemeTransition(() => {
             if (id === "amber") delete document.documentElement.dataset.palette;
             else document.documentElement.dataset.palette = id;
             localStorage.setItem("msfb-palette", id);
-            applyThemeColorMeta(document.documentElement.dataset.theme);
+            applyThemeColorMeta(document.documentElement.dataset.theme ?? "dark");
         });
         setCurrent(id);
         setOpen(false);
@@ -87,7 +91,7 @@ export function PaletteMenu() {
                 class="icon-btn relative z-50"
                 onClick={() => setOpen(!open())}
                 aria-label="Choose color scheme"
-                aria-expanded={open()}
+                aria-expanded={open() ? "true" : "false"}
             >
                 <Palette size={20} />
             </button>
@@ -98,7 +102,7 @@ export function PaletteMenu() {
                             <button
                                 type="button"
                                 role="menuitemradio"
-                                aria-checked={current() === p.id}
+                                aria-checked={current() === p.id ? "true" : "false"}
                                 class="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-body-m text-on-surface transition-colors duration-150 hover:bg-on-surface/10"
                                 onClick={() => pick(p.id)}
                             >
@@ -116,7 +120,7 @@ export function PaletteMenu() {
     );
 }
 
-export function AppBar(props) {
+export function AppBar(props: { back?: boolean; actions?: JSX.Element }): JSX.Element {
     return (
         <header class="app-bar">
             <div class="mx-auto flex h-16 w-full max-w-6xl items-center gap-3 px-4 sm:px-6">
@@ -128,36 +132,39 @@ export function AppBar(props) {
                 <a href="./index.html" class="text-title-l no-underline outline-offset-4" style={{ color: "var(--m3-on-surface)" }}>
                     Metal Slug Font <span style={{ color: "var(--m3-primary)" }}>Reborn</span>
                 </a>
-                <div class="ml-auto flex items-center gap-1">
-                    {props.actions}
-                </div>
+                <div class="ml-auto flex items-center gap-1">{props.actions}</div>
             </div>
         </header>
     );
 }
 
-export function Page(props) {
+export interface FooterLink {
+    href: string;
+    label: string;
+}
+
+export function Page(props: { back?: boolean; actions?: JSX.Element; links?: FooterLink[]; children?: JSX.Element }): JSX.Element {
     return (
         <div class="flex min-h-dvh flex-col">
             <AppBar back={props.back} actions={props.actions} />
-            <main class="mx-auto w-full max-w-6xl flex-1 px-4 pb-16 pt-6 sm:px-6 sm:pt-8">
-                {props.children}
-            </main>
+            <main class="mx-auto w-full max-w-6xl flex-1 px-4 pb-16 pt-6 sm:px-6 sm:pt-8">{props.children}</main>
             <footer class="mx-auto w-full max-w-6xl px-4 pb-10 sm:px-6">
-                <div class="flex flex-wrap items-center justify-center gap-1 border-t border-outline-variant pt-6 text-body-m text-on-surface-variant">
-                    <For each={props.links}>
-                        {(link, i) => (
-                            <>
-                                <Show when={i() > 0}>
-                                    <span class="px-1 opacity-50">·</span>
-                                </Show>
-                                <a href={link.href} class="footer-link">
-                                    {link.label}
-                                </a>
-                            </>
-                        )}
-                    </For>
-                </div>
+                <Show when={props.links}>
+                    <div class="flex flex-wrap items-center justify-center gap-1 border-t border-outline-variant pt-6 text-body-m text-on-surface-variant">
+                        <For each={props.links}>
+                            {(link, i) => (
+                                <>
+                                    <Show when={i() > 0}>
+                                        <span class="px-1 opacity-50">·</span>
+                                    </Show>
+                                    <a href={link.href} class="footer-link">
+                                        {link.label}
+                                    </a>
+                                </>
+                            )}
+                        </For>
+                    </div>
+                </Show>
                 <p class="mt-3 text-center text-body-s text-on-surface-variant">
                     Fan tool for the Metal Slug font sprites. Metal Slug is a trademark of SNK Corporation.
                 </p>

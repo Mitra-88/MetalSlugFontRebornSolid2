@@ -5,8 +5,8 @@ import {
     getAssetsToPreload,
     getCharPath,
     isCharSupported,
-} from "../src/lib/fonts.js";
-import { computeLayout, getLayout } from "../src/lib/render.js";
+} from "../src/lib/fonts.ts";
+import { computeLayout, getLayout } from "../src/lib/render.ts";
 
 assert.equal(getCharPath("1", "blue", "a"), "./assets/fonts/font-1/ms-blue/letters/lower-case/a.png");
 assert.equal(getCharPath("1", "blue", "Z"), "./assets/fonts/font-1/ms-blue/letters/upper-case/Z.png");
@@ -55,11 +55,12 @@ const measure = () => sprite;
 const layout = computeLayout(["ab", "", "c d"], measure, "1", "blue");
 
 assert.equal(layout.lines.length, 3);
-assert.deepEqual(layout.lines[0], { chars: [{ sprite, width: 10, height: 20 }, { sprite, width: 10, height: 20 }], lineWidth: 20, lineHeight: 20 });
+assert.deepEqual(layout.lines[0], { empty: false, chars: [{ sprite, width: 10, height: 20 }, { sprite, width: 10, height: 20 }], lineWidth: 20, lineHeight: 20 });
 assert.deepEqual(layout.lines[1], { empty: true, height: 50 });
+assert.equal(layout.lines[2].empty, false);
 assert.deepEqual(layout.lines[2].chars, [
     { sprite, width: 10, height: 20 },
-    { space: true, width: 25 },
+    { space: true, width: 25, height: 0 },
     { sprite, width: 10, height: 20 },
 ]);
 assert.equal(layout.width, 45);

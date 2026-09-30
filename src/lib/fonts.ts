@@ -1,4 +1,15 @@
-export const SPECIAL_CHARACTERS = {
+export type FontId = "1" | "2" | "3" | "4" | "5";
+export type ColorName = "blue" | "orange" | "gold" | "yellow";
+
+export interface FontSupport {
+    colors: ColorName[];
+    lowerCase: boolean;
+    upperCase: boolean;
+    numbers: number[];
+    symbols: string[];
+}
+
+export const SPECIAL_CHARACTERS: Record<string, string> = {
     "!": "Exclamation",
     "?": "Question",
     "'": "Apostrophe",
@@ -70,7 +81,7 @@ export const SPECIAL_CHARACTERS = {
     "Ⅴ": "Five",
 };
 
-const FONT_SYMBOL_OVERRIDES = {
+const FONT_SYMBOL_OVERRIDES: Partial<Record<FontId, Record<string, string>>> = {
     2: { "á": "A-3", "é": "E-4", "ú": "U-4" },
 };
 
@@ -80,7 +91,7 @@ export const LINE_SPACING = 15;
 export const SAFE_LIMIT = 8192;
 export const HARD_LIMIT = 16384;
 
-export const FONT_SUPPORT = {
+export const FONT_SUPPORT: Record<FontId, FontSupport> = {
     1: {
         colors: ["blue", "orange", "gold"],
         lowerCase: true,
@@ -118,7 +129,15 @@ export const FONT_SUPPORT = {
     }
 };
 
-export function getCharPath(font, color, char) {
+export function isCharSupported(fontId: FontId, char: string): boolean {
+    const support = FONT_SUPPORT[fontId];
+    if (char >= "a" && char <= "z") return support.lowerCase;
+    if (char >= "A" && char <= "Z") return support.upperCase;
+    if (char >= "0" && char <= "9") return support.numbers.includes(parseInt(char, 10));
+    return support.symbols.includes(char);
+}
+
+export function getCharPath(font: FontId, color: ColorName, char: string): string | null {
     if (!isCharSupported(font, char)) return null;
     const base = `./assets/fonts/font-${font}/ms-${color}`;
     if (char >= "a" && char <= "z") return `${base}/letters/lower-case/${char}.png`;
@@ -128,17 +147,8 @@ export function getCharPath(font, color, char) {
     return name ? `${base}/symbols/${name}.png` : null;
 }
 
-export function isCharSupported(fontId, char) {
-    const support = FONT_SUPPORT[fontId];
-    if (!support) return false;
-    if (char >= "a" && char <= "z") return support.lowerCase;
-    if (char >= "A" && char <= "Z") return support.upperCase;
-    if (char >= "0" && char <= "9") return support.numbers.includes(parseInt(char, 10));
-    return support.symbols.includes(char);
-}
-
-export function collectUnsupported(fontId, text) {
-    const skipped = [];
+export function collectUnsupported(fontId: FontId, text: string): string[] {
+    const skipped: string[] = [];
     for (const line of text.split("\n")) {
         for (const c of [...line]) {
             if (/\s/.test(c)) continue;
@@ -148,8 +158,8 @@ export function collectUnsupported(fontId, text) {
     return skipped;
 }
 
-export function getTextCharPaths(fontId, color, text) {
-    const paths = [];
+export function getTextCharPaths(fontId: FontId, color: ColorName, text: string): string[] {
+    const paths: string[] = [];
     for (const line of text.split("\n")) {
         for (const c of [...line]) {
             if (/\s/.test(c)) continue;
@@ -160,11 +170,11 @@ export function getTextCharPaths(fontId, color, text) {
     return [...new Set(paths)];
 }
 
-export function getAssetsToPreload(fontId, color) {
+export function getAssetsToPreload(fontId: FontId, color: ColorName): string[] {
     const support = FONT_SUPPORT[fontId];
-    if (!support || !support.colors.includes(color)) return [];
+    if (!support.colors.includes(color)) return [];
 
-    const chars = [];
+    const chars: string[] = [];
     if (support.lowerCase)
         for (let i = 97; i <= 122; i++) chars.push(String.fromCharCode(i));
     if (support.upperCase)
@@ -172,5 +182,5 @@ export function getAssetsToPreload(fontId, color) {
     for (const n of support.numbers) chars.push(String(n));
     chars.push(...support.symbols);
 
-    return chars.map(c => getCharPath(fontId, color, c)).filter(Boolean);
+    return chars.map((c) => getCharPath(fontId, color, c)).filter((p): p is string => p !== null);
 }

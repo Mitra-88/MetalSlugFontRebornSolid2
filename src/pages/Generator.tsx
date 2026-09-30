@@ -1,25 +1,35 @@
-import { For, Show, createMemo, createSignal, onMount } from "solid-js";
-import { Activity, Check, ChevronDown, Download, Image, Info, TriangleAlert } from "lucide-solid";
-import { COLOR_HEX, Page, PaletteMenu, ThemeToggle } from "./../Page.jsx";
-import { FONT_SUPPORT, HARD_LIMIT, collectUnsupported } from "../lib/fonts.js";
+import { For, Show, createMemo, createSignal, flush, onSettled } from "solid-js";
+import type { JSX } from "@solidjs/web";
+import { Activity, Check, ChevronDown, Download, Image, Info, TriangleAlert } from "../lib/icons.tsx";
+import { COLOR_HEX, Page, PaletteMenu, ThemeToggle } from "../Page.tsx";
+import { FONT_SUPPORT, HARD_LIMIT, collectUnsupported } from "../lib/fonts.ts";
+import type { ColorName, FontId } from "../lib/fonts.ts";
 import {
     getMissingPaths,
     loadImage,
     preloadIdle,
     renderToCanvas,
     resetFailures,
-} from "../lib/render.js";
-import * as perf from "../lib/perf.js";
+} from "../lib/render.ts";
+import * as perf from "../lib/perf.ts";
+import type { PerfSample } from "../lib/perf.ts";
 
-const FONTS = ["1", "2", "3", "4", "5"];
-const SCALES = [
+const FONTS: FontId[] = ["1", "2", "3", "4", "5"];
+const SCALES: { value: number; label: string }[] = [
     { value: 1, label: "1×" },
     { value: 2, label: "2×" },
     { value: 3, label: "3×" },
     { value: 4, label: "4×" },
 ];
 
-function Segmented(props) {
+interface SegmentedProps<T extends string | number> {
+    label: string;
+    options: { value: T; label: string }[];
+    value: T;
+    onChange: (value: T) => void;
+}
+
+function Segmented<T extends string | number>(props: SegmentedProps<T>): JSX.Element {
     const index = () => Math.max(0, props.options.findIndex((o) => o.value === props.value));
     return (
         <div class="m3-seg bg-surface-highest" role="radiogroup" aria-label={props.label}>
@@ -32,9 +42,8 @@ function Segmented(props) {
                     <button
                         type="button"
                         role="radio"
-                        aria-checked={o.value === props.value}
-                        class="m3-seg-btn"
-                        classList={{ selected: o.value === props.value }}
+                        aria-checked={o.value === props.value ? "true" : "false"}
+                        class={{ "m3-seg-btn": true, selected: o.value === props.value }}
                         onClick={() => props.onChange(o.value)}
                     >
                         <Show when={o.value === props.value}>
@@ -48,7 +57,7 @@ function Segmented(props) {
     );
 }
 
-function ColorChips(props) {
+function ColorChips(props: { options: ColorName[]; value: ColorName; onChange: (c: ColorName) => void }): JSX.Element {
     return (
         <div class="flex flex-wrap gap-2" role="radiogroup" aria-label="Color">
             <For each={props.options}>
@@ -56,9 +65,8 @@ function ColorChips(props) {
                     <button
                         type="button"
                         role="radio"
-                        aria-checked={c === props.value}
-                        class="m3-chip"
-                        classList={{ selected: c === props.value }}
+                        aria-checked={c === props.value ? "true" : "false"}
+                        class={{ "m3-chip": true, selected: c === props.value }}
                         onClick={() => props.onChange(c)}
                     >
                         <span class="color-dot" style={{ background: COLOR_HEX[c] }} />
@@ -73,35 +81,35 @@ function ColorChips(props) {
     );
 }
 
-function FieldLabel(props) {
+function FieldLabel(props: { children: JSX.Element }): JSX.Element {
     return <p class="mb-2 text-label-m text-on-surface-variant">{props.children}</p>;
 }
 
-export default function Generator() {
+export default function Generator(): JSX.Element {
     const [text, setText] = createSignal("");
-    const [font, setFont] = createSignal("1");
-    const [color, setColor] = createSignal("blue");
+    const [font, setFont] = createSignal<FontId>("1");
+    const [color, setColor] = createSignal<ColorName>("blue");
     const [scale, setScale] = createSignal(1);
-    const [status, setStatus] = createSignal("idle");
+    const [status, setStatus] = createSignal<"idle" | "loading" | "success" | "error">("idle");
     const [errorMsg, setErrorMsg] = createSignal("");
     const [errorLink, setErrorLink] = createSignal(false);
-    const [errorKind, setErrorKind] = createSignal("");
+    const [errorKind, setErrorKind] = createSignal<"failed" | "empty" | "too-large" | "">("");
     const [warning, setWarning] = createSignal("");
     const [imgMeta, setImgMeta] = createSignal("");
-    const [sample, setSample] = createSignal(null);
+    const [sample, setSample] = createSignal<PerfSample | null>(null);
     const [showPerf, setShowPerf] = createSignal(false);
     const [loadingCount, setLoadingCount] = createSignal(0);
-    const [skipped, setSkipped] = createSignal([]);
+    const [skipped, setSkipped] = createSignal<string[]>([]);
 
-    let canvas;
+    let canvas!: HTMLCanvasElement;
     let genId = 0;
     let debounceId = 0;
 
-    const fontColors = createMemo(() => FONT_SUPPORT[font()].colors);
+    const fontColors = createMemo((): ColorName[] => FONT_SUPPORT[font()].colors);
     const perfStats = createMemo(() => (sample() ? perf.stats() : null));
     const recentSamples = createMemo(() => (sample() ? perf.samples().slice(-5) : []));
 
-    const fail = (msg, link, kind = "") => {
+    const fail = (msg: string, link: boolean, kind: "failed" | "empty" | "too-large" | "" = ""): void => {
         setErrorMsg(msg);
         setErrorLink(link);
         setErrorKind(kind);
@@ -112,12 +120,12 @@ export default function Generator() {
         setStatus("error");
     };
 
-    const clearCanvas = () => {
+    const clearCanvas = (): void => {
         canvas.width = 0;
         canvas.height = 0;
     };
 
-    async function generate(loadBefore = 0) {
+    async function generate(loadBefore = 0): Promise<void> {
         const id = ++genId;
         const raw = text();
         if (!raw.trim()) {
@@ -174,10 +182,11 @@ export default function Generator() {
         }
     }
 
-    function onTextInput(e) {
-        setText(e.currentTarget.value);
-        clearTimeout(debounceId);
-        if (!text().trim()) {
+    function onTextInput(e: Event): void {
+        const value = (e.currentTarget as HTMLTextAreaElement).value;
+        setText(value);
+        window.clearTimeout(debounceId);
+        if (!value.trim()) {
             genId++;
             setStatus("idle");
             setErrorMsg("");
@@ -188,17 +197,18 @@ export default function Generator() {
             clearCanvas();
             return;
         }
-        debounceId = setTimeout(() => generate(), 50);
+        debounceId = window.setTimeout(() => generate(), 50);
     }
 
-    const revalidate = (apply) => {
+    const revalidate = (apply: () => void): void => {
         clearTimeout(debounceId);
         genId++;
         apply();
+        flush();
         generate();
     };
 
-    function onFontChange(f) {
+    function onFontChange(f: FontId): void {
         revalidate(() => {
             setFont(f);
             const colors = FONT_SUPPORT[f].colors;
@@ -208,31 +218,26 @@ export default function Generator() {
         });
     }
 
-    function onColorChange(c) {
+    function onColorChange(c: ColorName): void {
         revalidate(() => {
             setColor(c);
             preloadIdle(font(), c);
         });
     }
 
-    function onScaleChange(s) {
+    function onScaleChange(s: number): void {
         revalidate(() => setScale(s));
     }
 
-    function retryFailed() {
-        resetFailures();
-        generate();
-    }
-
-    onMount(() => {
+    onSettled(() => {
         preloadIdle(font(), color());
     });
 
-    function download() {
+    function download(): void {
         if (!canvas.width || !canvas.height) return;
         canvas.toBlob((blob) => {
             if (!blob) {
-                fail("Download failed. The image might be too large for the browser to process. Try reducing the scale.", false);
+                fail("Download failed. The image might be too large for the browser to process. Try reducing the scale.", false, "");
                 return;
             }
             const url = URL.createObjectURL(blob);
@@ -245,10 +250,15 @@ export default function Generator() {
         }, "image/png");
     }
 
-    const cacheHitPct = () => {
+    function retryFailed(): void {
+        resetFailures();
+        generate();
+    }
+
+    const cacheHitPct = (): number => {
         const s = sample();
         if (!s || !s.sprites) return 100;
-        return Math.round((s.cacheHits / Math.max(1, s.sprites)) * 100);
+        return Math.round((s.cacheHits ?? 0) / Math.max(1, s.sprites) * 100);
     };
 
     return (
@@ -274,7 +284,7 @@ export default function Generator() {
 
                     <div class="mt-5 flex flex-col gap-5">
                         <div class="m3-field" data-empty={text() === ""}>
-                            <textarea id="text-input" placeholder=" " required value={text()} onInput={onTextInput} />
+                            <textarea id="text-input" placeholder=" " required onInput={onTextInput} />
                             <label for="text-input">Your text</label>
                         </div>
 
@@ -304,14 +314,14 @@ export default function Generator() {
                     <div class="flex items-center justify-between gap-3">
                         <h2 class="text-title-m">Preview</h2>
                         <span
-                            class="state-chip"
-                            aria-live="polite"
-                            classList={{
+                            class={{
+                                "state-chip": true,
                                 success: status() === "success",
                                 loading: status() === "loading",
                                 error: status() === "error",
                                 idle: status() === "idle",
                             }}
+                            aria-live="polite"
                         >
                             {status() === "success" && "Ready"}
                             {status() === "loading" && "Rendering"}
@@ -320,11 +330,13 @@ export default function Generator() {
                         </span>
                     </div>
 
-                    <div class="stage relative mt-4 grid min-h-[260px] place-items-center overflow-hidden p-4 sm:min-h-[300px]" aria-busy={status() === "loading"}>
+                    <div class="stage relative mt-4 grid min-h-[260px] place-items-center overflow-hidden p-4 sm:min-h-[300px]" aria-busy={status() === "loading" ? "true" : "false"}>
                         <canvas
                             ref={canvas}
-                            class="pixelated relative z-10 max-h-[360px] max-w-full object-contain"
-                            classList={{ invisible: status() === "error" }}
+                            class={[
+                                "pixelated relative z-10 max-h-[360px] max-w-full object-contain",
+                                { invisible: status() === "error" },
+                            ]}
                             role="img"
                             aria-label={`Rendered preview: ${text() || "nothing yet"}`}
                         />
@@ -396,13 +408,13 @@ export default function Generator() {
                             <Show when={sample()}>
                                 <span class="chip-static mono">
                                     <Activity size={13} />
-                                    {sample().total.toFixed(1)} ms
+                                    {sample()!.total.toFixed(1)} ms
                                 </span>
-                                <span class="chip-static mono">{sample().sprites} {sample().sprites === 1 ? "sprite" : "sprites"}</span>
+                                <span class="chip-static mono">{sample()!.sprites} {sample()!.sprites === 1 ? "sprite" : "sprites"}</span>
                                 <span class="chip-static mono">{cacheHitPct()}% cached</span>
-                                <button type="button" class="m3-chip" onClick={() => setShowPerf(!showPerf())} aria-expanded={showPerf()}>
+                                <button type="button" class="m3-chip" onClick={() => setShowPerf(!showPerf())} aria-expanded={showPerf() ? "true" : "false"}>
                                     Details
-                                    <ChevronDown size={14} class="transition-transform duration-300" classList={{ "rotate-180": showPerf() }} />
+                                    <ChevronDown size={14} class={["transition-transform duration-300", { "rotate-180": showPerf() }]} />
                                 </button>
                             </Show>
                         </div>
@@ -423,8 +435,8 @@ export default function Generator() {
                                 <tbody>
                                     <For each={recentSamples()}>
                                         {(s, i) => (
-                                            <tr classList={{ "bg-surface-container-low": i() % 2 === 0 }}>
-                                                <td class="px-3 py-1.5">{Math.max(1, perf.stats().count - recentSamples().length + i() + 1)}</td>
+                                            <tr class={{ "bg-surface-container-low": i() % 2 === 0 }}>
+                                                <td class="px-3 py-1.5">{Math.max(1, perf.stats()!.count - recentSamples().length + i() + 1)}</td>
                                                 <td class="px-3 py-1.5">{(s.phases.load ?? 0).toFixed(1)}</td>
                                                 <td class="px-3 py-1.5">{(s.phases.layout ?? 0).toFixed(2)}</td>
                                                 <td class="px-3 py-1.5">{(s.phases.draw ?? 0).toFixed(2)}</td>
@@ -434,16 +446,16 @@ export default function Generator() {
                                     </For>
                                     <tr class="bg-surface-high text-on-surface">
                                         <td class="px-3 py-1.5 font-semibold">p95</td>
-                                        <td class="px-3 py-1.5">{(perfStats().phases.load?.p95 ?? 0).toFixed(1)}</td>
-                                        <td class="px-3 py-1.5">{(perfStats().phases.layout?.p95 ?? 0).toFixed(2)}</td>
-                                        <td class="px-3 py-1.5">{(perfStats().phases.draw?.p95 ?? 0).toFixed(2)}</td>
-                                        <td class="px-3 py-1.5">{perfStats().p95.toFixed(2)}</td>
+                                        <td class="px-3 py-1.5">{(perfStats()!.phases.load?.p95 ?? 0).toFixed(1)}</td>
+                                        <td class="px-3 py-1.5">{(perfStats()!.phases.layout?.p95 ?? 0).toFixed(2)}</td>
+                                        <td class="px-3 py-1.5">{(perfStats()!.phases.draw?.p95 ?? 0).toFixed(2)}</td>
+                                        <td class="px-3 py-1.5">{perfStats()!.p95.toFixed(2)}</td>
                                     </tr>
                                 </tbody>
                             </table>
                         </div>
                         <p class="mt-2 text-body-s text-on-surface-variant">
-                            Last {perfStats().count} renders sampled. Sprites decode once into GPU bitmaps and layouts are memoized per text.
+                            Last {perfStats()!.count} renders sampled. Sprites decode once into GPU bitmaps and layouts are memoized per text.
                         </p>
                     </Show>
 

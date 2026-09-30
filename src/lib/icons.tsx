@@ -1,16 +1,14 @@
 // Icon glyph data copied from the lucide package v1.49.0 (ISC License, (c) Lucide Contributors).
 import { Dynamic } from "@solidjs/web";
-import { For } from "solid-js";
-import { merge } from "solid-js";
 
 export type IconNode = [tag: string, attrs: Record<string, string>];
 
 export interface IconProps {
   size?: number;
-  class?: string;
+  class?: string | Record<string, boolean | undefined> | (string | Record<string, boolean | undefined>)[];
 }
 
-function Icon(props: IconProps, node: IconNode) {
+function Icon(props: IconProps, node: IconNode[]) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -25,7 +23,7 @@ function Icon(props: IconProps, node: IconNode) {
       class={props.class}
       aria-hidden="true"
     >
-      <For each={node}>{([tag, attrs]) => <Dynamic component={tag} {...attrs} />}</For>
+      {node.map(([tag, attrs]) => <Dynamic component={tag} {...attrs} />)}
     </svg>
   );
 }

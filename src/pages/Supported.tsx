@@ -1,12 +1,20 @@
 import { For, Show } from "solid-js";
-import { ColorDot, Page, ThemeToggle, capitalize } from "../Page.jsx";
-import { FONT_SUPPORT } from "../lib/fonts.js";
+import type { JSX } from "@solidjs/web";
+import { ColorDot, Page, ThemeToggle, capitalize } from "../Page.tsx";
+import { FONT_SUPPORT } from "../lib/fonts.ts";
+import type { ColorName, FontId } from "../lib/fonts.ts";
 
-const FONTS = [1, 2, 3, 4, 5];
+const FONTS: FontId[] = ["1", "2", "3", "4", "5"];
 const NEVER_SUPPORTED = "è ē ì î ï ù û and uppercase accented letters (À É Ô ...)";
 const ROMAN = ["Ⅰ", "Ⅱ", "Ⅲ", "Ⅳ", "Ⅴ"];
 
-function supportRows(fontId) {
+interface SupportRow {
+    label: string;
+    value?: string;
+    colors?: ColorName[];
+}
+
+function supportRows(fontId: FontId): SupportRow[] {
     const s = FONT_SUPPORT[fontId];
     return [
         { label: "Letters", value: s.lowerCase ? "Lowercase and Uppercase" : "Uppercase only" },
@@ -16,7 +24,7 @@ function supportRows(fontId) {
     ];
 }
 
-export default function Supported() {
+export default function Supported(): JSX.Element {
     return (
         <Page
             back
@@ -40,7 +48,9 @@ export default function Supported() {
                         <section class="rise-in card p-5" style={{ "animation-delay": `${i() * 60}ms` }}>
                             <div class="flex items-center justify-between">
                                 <h2 class="text-title-m">Font {n}</h2>
-                                <span class="chip-static">{FONT_SUPPORT[n].colors.length} {FONT_SUPPORT[n].colors.length === 1 ? "color" : "colors"}</span>
+                                <span class="chip-static">
+                                    {FONT_SUPPORT[n].colors.length} {FONT_SUPPORT[n].colors.length === 1 ? "color" : "colors"}
+                                </span>
                             </div>
                             <ul class="mt-3 flex flex-col gap-2">
                                 <For each={supportRows(n)}>

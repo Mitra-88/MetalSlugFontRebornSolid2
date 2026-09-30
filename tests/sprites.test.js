@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readdirSync } from "node:fs";
 import { join } from "node:path";
-import { FONT_SUPPORT, getCharPath } from "../src/lib/fonts.js";
+import { FONT_SUPPORT, getCharPath } from "../src/lib/fonts.ts";
 
 const ROOT = join(import.meta.dirname, "..");
 const FONTS_DIR = join(ROOT, "public", "assets", "fonts");
