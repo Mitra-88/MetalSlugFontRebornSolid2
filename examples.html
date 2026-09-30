@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MetalSlugFontReborn Examples</title>
+    <meta name="theme-color" content="#17120c">
+    <script>
+        const theme = localStorage.getItem("msfb-theme") ?? (matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark");
+        document.documentElement.dataset.theme = theme;
+        const palette = localStorage.getItem("msfb-palette") ?? "amber";
+        if (palette !== "amber") document.documentElement.dataset.palette = palette;
+        const tints = { amber: ["#fff8f2", "#17120c"], verdant: ["#f8faf0", "#11140c"], azure: ["#f9f9ff", "#111318"] };
+        document.querySelector('meta[name="theme-color"]').content = (tints[palette] ?? tints.amber)[theme === "light" ? 0 : 1];
+    </script>
+    <meta name="description" content="A tool for creating images with the Metal Slug font.">
+    <meta name="keywords" content="Metal Slug, Metal Slug Font, Metal Slug Font Reborn">
+    <meta name="author" content="Mitra88, AmbitiousFlowDev">
+    <meta property="og:title" content="MetalSlugFontReborn">
+    <meta property="og:description" content="A tool for creating images with the Metal Slug font.">
+    <meta property="og:image" content="./assets/icons/logo.png">
+    <meta property="og:url" content="https://vermeil.pythonanywhere.com/examples">
+    <link rel="icon" href="./assets/icons/favicon.ico" type="image/x-icon">
+    <link rel="manifest" href="./manifest.json">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,300..1000&display=swap">
+    <script type="module" src="/src/examples.jsx"></script>
+</head>
+<body>
+    <div id="root"></div>
+</body>
+</html>

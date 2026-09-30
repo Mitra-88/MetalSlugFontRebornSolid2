@@ -1,0 +1,32 @@
+{
+  "name": "metalslugfontrebornweb",
+  "version": "1.0.0",
+  "description": "Web app version of [MetalSlugFontReborn](https://github.com/Mitra-88/MetalSlugFontReborn). _This branch reimplements it to run entirely client-side_",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "node tests/layout.test.js && node tests/perf.test.js && node tests/sprites.test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Mitra-88/MetalSlugFontRebornWeb.git"
+  },
+  "keywords": [],
+  "bugs": {
+    "url": "https://github.com/Mitra-88/MetalSlugFontRebornWeb/issues"
+  },
+  "homepage": "https://github.com/Mitra-88/MetalSlugFontRebornWeb#readme",
+  "dependencies": {
+    "lucide-solid": "^1.49.0",
+    "solid-js": "^1.9.15"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "tailwindcss": "^4.3.3",
+    "vite": "^8.3.1",
+    "vite-plugin-solid": "^2.11.14"
+  }
+}
