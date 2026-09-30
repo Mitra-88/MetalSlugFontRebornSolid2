@@ -1,4 +1,4 @@
-import { For, Show, createSignal } from "solid-js";
+import { For, Show, createSignal, onSettled } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { ArrowLeft, Check, Moon, Palette, Sun } from "./lib/icons.tsx";
 import type { ColorName } from "./lib/fonts.ts";
@@ -55,6 +55,19 @@ export function ThemeToggle(): JSX.Element {
         });
         setTheme(next);
     };
+
+    onSettled(() => {
+        const scheme = window.matchMedia("(prefers-color-scheme: light)");
+        const onChange = (e: MediaQueryListEvent): void => {
+            if (localStorage.getItem("msfb-theme")) return;
+            const next = e.matches ? "light" : "dark";
+            document.documentElement.dataset.theme = next;
+            applyThemeColorMeta(next);
+            setTheme(next);
+        };
+        scheme.addEventListener("change", onChange);
+        return () => scheme.removeEventListener("change", onChange);
+    });
 
     return (
         <button type="button" class="icon-btn" onClick={toggle} aria-label={`Switch to ${theme() === "dark" ? "light" : "dark"} theme`}>

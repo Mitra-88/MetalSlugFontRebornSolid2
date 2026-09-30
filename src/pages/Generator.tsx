@@ -85,11 +85,35 @@ function FieldLabel(props: { children: JSX.Element }): JSX.Element {
     return <p class="mb-2 text-label-m text-on-surface-variant">{props.children}</p>;
 }
 
+const SETTINGS_KEY = "msfb-settings";
+
+interface StoredSettings {
+    font?: unknown;
+    color?: unknown;
+    scale?: unknown;
+}
+
+function loadSettings(): { font: FontId; color: ColorName; scale: number } {
+    let parsed: StoredSettings | null = null;
+    try {
+        parsed = (JSON.parse(localStorage.getItem(SETTINGS_KEY) ?? "null")) as StoredSettings | null;
+    } catch {
+        parsed = null;
+    }
+    if (!parsed || typeof parsed !== "object") return { font: "1", color: "blue", scale: 1 };
+    const font: FontId = FONTS.includes(parsed.font as FontId) ? (parsed.font as FontId) : "1";
+    const colors = FONT_SUPPORT[font].colors;
+    const color: ColorName = colors.includes(parsed.color as ColorName) ? (parsed.color as ColorName) : colors[0];
+    const scale = [1, 2, 3, 4].includes(parsed.scale as number) ? (parsed.scale as number) : 1;
+    return { font, color, scale };
+}
+
 export default function Generator(): JSX.Element {
+    const saved = loadSettings();
     const [text, setText] = createSignal("");
-    const [font, setFont] = createSignal<FontId>("1");
-    const [color, setColor] = createSignal<ColorName>("blue");
-    const [scale, setScale] = createSignal(1);
+    const [font, setFont] = createSignal<FontId>(saved.font);
+    const [color, setColor] = createSignal<ColorName>(saved.color);
+    const [scale, setScale] = createSignal(saved.scale);
     const [status, setStatus] = createSignal<"idle" | "loading" | "success" | "error">("idle");
     const [errorMsg, setErrorMsg] = createSignal("");
     const [errorLink, setErrorLink] = createSignal(false);
@@ -200,11 +224,16 @@ export default function Generator(): JSX.Element {
         debounceId = window.setTimeout(() => generate(), 50);
     }
 
+    function saveSettings(): void {
+        localStorage.setItem(SETTINGS_KEY, JSON.stringify({ font: font(), color: color(), scale: scale() }));
+    }
+
     const revalidate = (apply: () => void): void => {
         clearTimeout(debounceId);
         genId++;
         apply();
         flush();
+        saveSettings();
         generate();
     };
 
@@ -286,6 +315,7 @@ export default function Generator(): JSX.Element {
                         <div class="m3-field" data-empty={text() === ""}>
                             <textarea id="text-input" placeholder=" " required onInput={onTextInput} />
                             <label for="text-input">Your text</label>
+                            <span class="char-count" aria-live="polite">{text().length} characters</span>
                         </div>
 
                         <div>
@@ -436,7 +466,7 @@ export default function Generator(): JSX.Element {
                                     <For each={recentSamples()}>
                                         {(s, i) => (
                                             <tr class={{ "bg-surface-container-low": i() % 2 === 0 }}>
-                                                <td class="px-3 py-1.5">{Math.max(1, perf.stats()!.count - recentSamples().length + i() + 1)}</td>
+                                                <td class="px-3 py-1.5">{Math.max(1, (perfStats()?.count ?? 0) - recentSamples().length + i() + 1)}</td>
                                                 <td class="px-3 py-1.5">{(s.phases.load ?? 0).toFixed(1)}</td>
                                                 <td class="px-3 py-1.5">{(s.phases.layout ?? 0).toFixed(2)}</td>
                                                 <td class="px-3 py-1.5">{(s.phases.draw ?? 0).toFixed(2)}</td>
