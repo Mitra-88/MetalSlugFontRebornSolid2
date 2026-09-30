@@ -31,10 +31,13 @@ function applyThemeColorMeta(theme: string): void {
 }
 
 function withThemeTransition(apply: () => void): void {
-    const root = document.documentElement;
-    root.classList.add("theme-fade");
-    apply();
-    setTimeout(() => root.classList.remove("theme-fade"), 450);
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const doc = document as Document & { startViewTransition?: (callback: () => void) => unknown };
+    if (reduced || typeof doc.startViewTransition !== "function") {
+        apply();
+        return;
+    }
+    doc.startViewTransition(apply);
 }
 
 export function ColorDot(props: { color: ColorName }): JSX.Element {
@@ -109,7 +112,7 @@ export function PaletteMenu(): JSX.Element {
                 <Palette size={20} />
             </button>
             <Show when={open()}>
-                <div class="absolute right-0 top-12 z-50 w-48 rounded-xl bg-surface-container p-2 shadow-e2" role="menu">
+                <div class="menu-in absolute right-0 top-12 z-50 w-48 origin-top-right rounded-xl bg-surface-container p-2 shadow-e2" role="menu">
                     <For each={PALETTES}>
                         {(p) => (
                             <button
