@@ -39,12 +39,16 @@ function applyThemeColorMeta(theme: string): void {
 
 function withThemeTransition(apply: () => void): void {
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const doc = document as Document & { startViewTransition?: (callback: () => void) => unknown };
+    const doc = document as Document & {
+        startViewTransition?: (callback: () => void) => { ready: Promise<unknown>; finished: Promise<unknown> };
+    };
     if (reduced || typeof doc.startViewTransition !== "function") {
         apply();
         return;
     }
-    doc.startViewTransition(apply);
+    const transition = doc.startViewTransition(apply);
+    transition.ready.catch(() => {});
+    transition.finished.catch(() => {});
 }
 
 export function ColorDot(props: { font: FontId; color: ColorName; size?: number }): JSX.Element {
