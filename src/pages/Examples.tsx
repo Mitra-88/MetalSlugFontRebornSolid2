@@ -20,7 +20,7 @@ export default function Examples(): JSX.Element {
             links={[
                 { href: "./index.html", label: "Generator" },
                 { href: "./supported.html", label: "Supported characters" },
-                { href: "https://github.com/Mitra-88/MetalSlugFontRebornWeb", label: "GitHub" },
+                { href: "https://github.com/Mitra-88/MetalSlugFontRebornSolid2", label: "GitHub" },
             ]}
         >
             <header class="rise-in mb-6 max-w-2xl">
