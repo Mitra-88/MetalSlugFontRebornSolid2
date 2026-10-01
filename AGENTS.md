@@ -144,6 +144,7 @@ UI state is one `status` signal (`idle | loading | success | error`). The canvas
 - Keep sprite filenames and `SPECIAL_CHARACTERS` in sync with the `MetalSlugFontReborn` asset repo; the web app has no sprites of its own. `tests/sprites.test.js` enforces this in both directions: after adding or removing any sprite file, run it before trusting the supported lists. Accent glyph numbering is per font (Font 1 E-3 is é, Font 2 E-4 is é); `FONT_SYMBOL_OVERRIDES` exists for exactly that and must stay in sync with the files.
 - Color changes go through the `--m3-*` variables only; never hardcode a theme hex in JSX (the color dots in `COLOR_HEX` are sprite-color swatches, not theme colors).
 - If a render phase is added or renamed, update `perf.js` phase handling, the Details table columns and `tests/perf.test.js` together.
+- The Cloudflare deploy is a Worker with static assets, configured in `wrangler.jsonc` (the workers.dev URL is linked from the pages and README, keep `workers_dev` on), with caching and security rules in `public/_headers`. Hashed bundles and fonts are immutable; sprite and example filenames never change, so those are capped at one day. Cloudflare behavior questions get answered from the Cloudflare docs, not from memory.
 
 ## Gotchas & quirks
 

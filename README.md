@@ -79,6 +79,17 @@ npm run preview
 
 The build outputs static HTML/JS/CSS into `dist/` with relative paths, ready to drop onto GitHub Pages, Netlify, Cloudflare Workers or any static host.
 
+### Deploy to Cloudflare
+
+The site runs as a Worker with static assets. Connect the repository in the Cloudflare dashboard (Workers Builds) and the pipeline is:
+
+```
+npm run build
+npx wrangler deploy
+```
+
+Deployment settings live in `wrangler.jsonc`, caching and security headers in `public/_headers` (copied into `dist/` by the build). Hashed bundles and fonts are cached forever, sprites and example images keep their stable filenames and are cached for one day. If the build warns about an unsupported engine, set a `NODE_VERSION` build variable (the repo requires Node 24.21.0 or newer) in the Worker's build settings.
+
 ### Type check and self-checks
 
 ```

@@ -1,0 +1,28 @@
+# Security headers on everything
+/*
+	X-Content-Type-Options: nosniff
+	Referrer-Policy: strict-origin-when-cross-origin
+	X-Frame-Options: DENY
+
+# Vite bundles and fonts are content-hashed, cache forever
+/assets/*.js
+	Cache-Control: public, max-age=31556952, immutable
+
+/assets/*.css
+	Cache-Control: public, max-age=31556952, immutable
+
+/assets/*.woff2
+	Cache-Control: public, max-age=31556952, immutable
+
+/assets/*.woff
+	Cache-Control: public, max-age=31556952, immutable
+
+# Sprites, examples and icons keep stable names, one day only
+/assets/fonts/*
+	Cache-Control: public, max-age=86400
+
+/assets/examples/*
+	Cache-Control: public, max-age=86400
+
+/assets/icons/*
+	Cache-Control: public, max-age=86400
