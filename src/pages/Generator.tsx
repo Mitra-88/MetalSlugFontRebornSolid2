@@ -157,6 +157,7 @@ export default function Generator(): JSX.Element {
     let genId = 0;
     let debounceId = 0;
     let lastVisualKey = "";
+    let composing = false;
 
     const fontColors = createMemo((): ColorName[] => FONT_SUPPORT[font()].colors);
     const perfStats = createMemo(() => (sample() ? perf.stats() : null));
@@ -247,6 +248,7 @@ export default function Generator(): JSX.Element {
     }
 
     function onTextInput(e: Event): void {
+        if (composing) return;
         const value = (e.currentTarget as HTMLTextAreaElement).value;
         setText(value);
         window.clearTimeout(debounceId);
@@ -348,7 +350,17 @@ export default function Generator(): JSX.Element {
 
                     <div class="mt-5 flex flex-col gap-5">
                         <div class="m3-field" data-empty={text() === ""}>
-                            <textarea id="text-input" placeholder=" " required onInput={onTextInput} />
+                            <textarea
+                                id="text-input"
+                                placeholder=" "
+                                required
+                                onInput={onTextInput}
+                                onCompositionStart={() => (composing = true)}
+                                onCompositionEnd={(e) => {
+                                    composing = false;
+                                    onTextInput(e);
+                                }}
+                            />
                             <label for="text-input">Your text</label>
                             <span class="char-count">{text().length} characters</span>
                         </div>
