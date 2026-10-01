@@ -9,7 +9,7 @@ export interface FontSupport {
     symbols: string[];
 }
 
-export const SPECIAL_CHARACTERS: Record<string, string> = {
+const SPECIAL_CHARACTERS: Record<string, string> = {
     "!": "Exclamation",
     "?": "Question",
     "'": "Apostrophe",

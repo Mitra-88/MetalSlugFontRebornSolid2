@@ -201,7 +201,7 @@ export function getLayout(
     return layout;
 }
 
-export function drawLayout(canvas: HTMLCanvasElement, layout: ComputedLayout, scale: number): void {
+function drawLayout(canvas: HTMLCanvasElement, layout: ComputedLayout, scale: number): void {
     const w = Math.max(1, layout.width);
     const h = Math.max(1, layout.height);
 
