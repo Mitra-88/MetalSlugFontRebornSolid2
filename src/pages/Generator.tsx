@@ -65,7 +65,7 @@ function Segmented<T extends string | number>(props: SegmentedProps<T>): JSX.Ele
                         <Show when={o.value === props.value}>
                             <Check size={15} class="pop-in" />
                         </Show>
-                        <span class="truncate">{o.label}</span>
+                        <span class="truncate" title={o.label}>{o.label}</span>
                     </button>
                 )}
             </For>
