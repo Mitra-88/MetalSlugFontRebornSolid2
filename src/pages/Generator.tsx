@@ -85,6 +85,12 @@ function FieldLabel(props: { children: JSX.Element }): JSX.Element {
     return <p class="mb-2 text-label-m text-on-surface-variant">{props.children}</p>;
 }
 
+const INVISIBLE = /[\u0300-\u036f\u200b-\u200f\u2060-\u2064\ufeff]/;
+
+function skipLabel(c: string): string {
+    return INVISIBLE.test(c) ? "U+" + (c.codePointAt(0) ?? 0).toString(16).toUpperCase().padStart(4, "0") : c;
+}
+
 const SETTINGS_KEY = "msfb-settings";
 
 interface StoredSettings {
@@ -172,7 +178,7 @@ export default function Generator(): JSX.Element {
         }
 
         const f = font();
-        const processed = f === "5" ? raw.toUpperCase() : raw;
+        const processed = (f === "5" ? raw.toUpperCase() : raw).normalize("NFC");
         const started = performance.now();
         const visualKey = `${f}|${color()}|${scale()}`;
 
@@ -425,7 +431,7 @@ export default function Generator(): JSX.Element {
                             <Info size={14} class="shrink-0" />
                             <span>
                                 Skipped {skipped().length} unsupported {skipped().length === 1 ? "character" : "characters"}:
-                                <span class="mono font-semibold"> {skipped().join("  ")}</span>
+                                <span class="mono font-semibold"> {skipped().map(skipLabel).join("  ")}</span>
                             </span>
                             <a href="./supported.html" class="ml-auto font-semibold underline underline-offset-2">
                                 See what is supported
