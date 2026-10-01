@@ -1,7 +1,7 @@
 import { For, Show, createMemo, createSignal, flush, onSettled } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { Activity, Check, ChevronDown, Download, Image, Info, TriangleAlert } from "../lib/icons.tsx";
-import { COLOR_HEX, Page, PaletteMenu, ThemeToggle } from "../Page.tsx";
+import { ColorDot, Page, PaletteMenu, ThemeToggle } from "../Page.tsx";
 import { FONT_SUPPORT, HARD_LIMIT, collectUnsupported } from "../lib/fonts.ts";
 import type { ColorName, FontId } from "../lib/fonts.ts";
 import {
@@ -57,7 +57,7 @@ function Segmented<T extends string | number>(props: SegmentedProps<T>): JSX.Ele
     );
 }
 
-function ColorChips(props: { options: ColorName[]; value: ColorName; onChange: (c: ColorName) => void }): JSX.Element {
+function ColorChips(props: { options: ColorName[]; value: ColorName; font: FontId; onChange: (c: ColorName) => void }): JSX.Element {
     return (
         <div class="flex flex-wrap gap-2" role="radiogroup" aria-label="Color">
             <For each={props.options}>
@@ -69,7 +69,7 @@ function ColorChips(props: { options: ColorName[]; value: ColorName; onChange: (
                         class={{ "m3-chip": true, selected: c === props.value }}
                         onClick={() => props.onChange(c)}
                     >
-                        <span class="color-dot" style={{ background: COLOR_HEX[c] }} />
+                        <ColorDot font={props.font} color={c} />
                         {c.charAt(0).toUpperCase() + c.slice(1)}
                         <Show when={c === props.value}>
                             <Check size={14} class="pop-in" />
@@ -336,7 +336,7 @@ export default function Generator(): JSX.Element {
 
                         <div>
                             <FieldLabel>Color</FieldLabel>
-                            <ColorChips options={fontColors()} value={color()} onChange={onColorChange} />
+                            <ColorChips options={fontColors()} value={color()} font={font()} onChange={onColorChange} />
                         </div>
 
                         <div>
