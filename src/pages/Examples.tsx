@@ -6,10 +6,10 @@ import type { FontId } from "../lib/fonts.ts";
 
 const EXAMPLES: { font: FontId; width: number; height: number }[] = [
     { font: "1", width: 348, height: 32 },
-    { font: "2", width: 316, height: 32 },
+    { font: "2", width: 320, height: 32 },
     { font: "3", width: 352, height: 64 },
-    { font: "4", width: 328, height: 32 },
-    { font: "5", width: 380, height: 38 },
+    { font: "4", width: 648, height: 64 },
+    { font: "5", width: 508, height: 50 },
 ];
 
 export default function Examples(): JSX.Element {
