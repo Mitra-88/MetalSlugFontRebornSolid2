@@ -1,6 +1,6 @@
-# MetalSlugFontRebornWeb
+# MetalSlugFontRebornSolid2
 
-Web app version of [MetalSlugFontReborn](https://github.com/Mitra-88/MetalSlugFontReborn). _This branch reimplements it to run entirely client-side on Solid 2 (TypeScript), Vite and Tailwind CSS, styled after Material Design 3_
+Web app version of [MetalSlugFontReborn](https://github.com/Mitra-88/MetalSlugFontReborn). — a standalone client-side reimplementation running on Solid 2 (TypeScript), Vite and Tailwind CSS, styled after Material Design 3
 
 ## 🚀 Demo
 
@@ -13,13 +13,6 @@ Visit the live instance: [https://vermeil.pythonanywhere.com](https://vermeil.py
 - Material 3 design system hand-rolled with Tailwind tokens: three seed palettes (Amber Forge, Verdant, Azure) each with full light and dark schemes, M3 color roles, type scale, shape and expressive spring motion.
 - Fast by construction: sprites decode once into GPU bitmaps via `createImageBitmap`, layouts are memoized per text, the rest of the font warms up during idle time, and a built-in sampling profiler shows render phase timings (load, layout, draw) with p50/p95 stats right in the preview panel.
 - Adaptive layout for desktop and mobile, no router, no server.
-
-## 🌿 Branches
-
-- `rewrite/solid2` — Solid 2.0 RC (`solid-js@next` + `@solidjs/web@next`), TypeScript. The forward-looking branch.
-- `rewrite/solid-vite` — Solid 1.9 LTS-style, plain JavaScript. Same app and features on the stable line.
-
-Both share the same Material 3 UI, profiler and feature set; pick one, they are independent.
 
 ## 📁 Project Structure
 
@@ -60,8 +53,8 @@ Both share the same Material 3 UI, profiler and feature set; pick one, they are 
 ### Setup
 
 ```
-git clone https://github.com/Mitra-88/MetalSlugFontRebornWeb.git
-cd MetalSlugFontRebornWeb
+git clone https://github.com/Mitra-88/MetalSlugFontRebornSolid2.git
+cd MetalSlugFontRebornSolid2
 npm install
 ```
 

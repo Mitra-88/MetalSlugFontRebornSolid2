@@ -1,5 +1,5 @@
 {
-  "name": "metalslugfontrebornweb",
+  "name": "metalslugfontreborn-solid2",
   "version": "1.0.0",
   "description": "Web app version of [MetalSlugFontReborn](https://github.com/Mitra-88/MetalSlugFontReborn). _This branch reimplements it to run entirely client-side_",
   "private": true,
@@ -13,13 +13,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Mitra-88/MetalSlugFontRebornWeb.git"
+    "url": "git+https://github.com/Mitra-88/MetalSlugFontRebornSolid2.git"
   },
   "keywords": [],
   "bugs": {
-    "url": "https://github.com/Mitra-88/MetalSlugFontRebornWeb/issues"
+    "url": "https://github.com/Mitra-88/MetalSlugFontRebornSolid2/issues"
   },
-  "homepage": "https://github.com/Mitra-88/MetalSlugFontRebornWeb#readme",
+  "homepage": "https://github.com/Mitra-88/MetalSlugFontRebornSolid2#readme",
   "dependencies": {
     "@solidjs/web": "next",
     "material-icons": "^1.13.14",
