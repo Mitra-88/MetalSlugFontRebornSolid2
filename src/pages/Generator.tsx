@@ -307,9 +307,16 @@ export default function Generator(): JSX.Element {
                 return;
             }
             const url = URL.createObjectURL(blob);
+            const slug = text()
+                .trim()
+                .toLowerCase()
+                .replace(/\s+/g, "-")
+                .replace(/[^a-z0-9-]+/g, "")
+                .replace(/^-+|-+$/g, "")
+                .slice(0, 24);
             const a = Object.assign(document.createElement("a"), {
                 href: url,
-                download: "metal-slug-generated.png",
+                download: `metal-slug-${slug || "text"}.png`,
             });
             a.click();
             URL.revokeObjectURL(url);
