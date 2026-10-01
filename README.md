@@ -1,6 +1,6 @@
 # MetalSlugFontRebornSolid2
 
-Web app version of [MetalSlugFontReborn](https://github.com/Mitra-88/MetalSlugFontReborn). — a standalone client-side reimplementation running on Solid 2 (TypeScript), Vite and Tailwind CSS, styled after Material Design 3
+Web app version of [MetalSlugFontReborn](https://github.com/Mitra-88/MetalSlugFontReborn): a standalone client-side reimplementation running on Solid 2 (TypeScript), Vite and Tailwind CSS, styled after Material Design 3
 
 ## 🚀 Demo
 
@@ -48,7 +48,7 @@ Visit the live instance: [https://vermeil.pythonanywhere.com](https://vermeil.py
 
 ### Prerequisites
 
-- Node.js 20.19+ or 22.12+
+- Node.js 24.21.0 or newer
 
 ### Setup
 
