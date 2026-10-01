@@ -151,17 +151,23 @@ export default function Generator(): JSX.Element {
         lastVisualKey = "";
     };
 
+    function resetToIdle(): void {
+        genId++;
+        setStatus("idle");
+        setErrorMsg("");
+        setErrorKind("");
+        setWarning("");
+        setImgMeta("");
+        setSkipped([]);
+        setSample(null);
+        clearCanvas();
+    }
+
     async function generate(loadBefore = 0): Promise<void> {
         const id = ++genId;
         const raw = text();
         if (!raw.trim()) {
-            setStatus("idle");
-            setErrorMsg("");
-            setErrorKind("");
-            setWarning("");
-            setSkipped([]);
-            setSample(null);
-            clearCanvas();
+            resetToIdle();
             return;
         }
 
@@ -217,14 +223,7 @@ export default function Generator(): JSX.Element {
         setText(value);
         window.clearTimeout(debounceId);
         if (!value.trim()) {
-            genId++;
-            setStatus("idle");
-            setErrorMsg("");
-            setErrorKind("");
-            setWarning("");
-            setSkipped([]);
-            setSample(null);
-            clearCanvas();
+            resetToIdle();
             return;
         }
         debounceId = window.setTimeout(() => generate(), 50);
