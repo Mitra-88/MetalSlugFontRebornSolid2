@@ -17,12 +17,18 @@ export const PALETTES = [
     { id: "amber", label: "Amber Forge", dot: "#964e00" },
     { id: "verdant", label: "Verdant", dot: "#386a20" },
     { id: "azure", label: "Azure", dot: "#415f91" },
+    { id: "violet", label: "Violet", dot: "#6750a4" },
+    { id: "rose", label: "Rose", dot: "#96000a" },
+    { id: "teal", label: "Teal", dot: "#009696" },
 ] as const;
 
 const SCHEME_TINTS: Record<string, [string, string]> = {
     amber: ["#fff8f2", "#17120c"],
     verdant: ["#f8faf0", "#11140c"],
     azure: ["#f9f9ff", "#111318"],
+    violet: ["#fef7ff", "#141218"],
+    rose: ["#fff2f3", "#170c0d"],
+    teal: ["#f2ffff", "#0c1717"],
 };
 
 function applyThemeColorMeta(theme: string): void {

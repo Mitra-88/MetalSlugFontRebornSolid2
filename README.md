@@ -10,7 +10,7 @@ Visit the live instance: [https://metalslugfontrebornsolid2.mitra88dev.workers.d
 
 - Live canvas rendering: type text, pick a font variant, color and scale, download the PNG. Characters a font cannot draw are skipped automatically with a clear notice, and the rest still renders.
 - Reliable by design: sprite loads have timeouts and automatic retries, failures offer a one-click retry, and the character support lists are machine-verified against the sprite files on every test run.
-- Material 3 design system hand-rolled with Tailwind tokens: three seed palettes (Amber Forge, Verdant, Azure) each with full light and dark schemes, M3 color roles, type scale, shape and expressive spring motion.
+- Material 3 design system hand-rolled with Tailwind tokens: six seed palettes (Amber Forge, Verdant, Azure, Violet, Rose, Teal) each with full light and dark schemes, M3 color roles, type scale, shape and expressive spring motion.
 - Fast by construction: sprites decode once into GPU bitmaps via `createImageBitmap`, layouts are memoized per text, the rest of the font warms up during idle time, and a built-in sampling profiler shows render phase timings (load, layout, draw) with p50/p95 stats right in the preview panel.
 - Adaptive layout for desktop and mobile, no router, no server.
 
@@ -34,7 +34,8 @@ The same app wrapped in a [Neutralino.js](https://neutralino.js.org) desktop she
 │   │   ├── fonts.ts      # Font metadata, character mapping, path builder
 │   │   ├── render.ts     # Bitmap cache, idle preloading, layout memo, canvas drawing
 │   │   ├── perf.ts       # Sampling profiler for the render pipeline
-│   │   └── icons.tsx     # Locally defined lucide icon glyphs
+│   │   ├── icons.tsx     # Locally defined Material Symbols icon aliases
+│   │   └── palette.ts    # Sampled sprite palettes for the color chips
 │   ├── pages/
 │   │   ├── Generator.tsx # Controls, live preview, profiler panel, download
 │   │   ├── Examples.tsx
@@ -45,7 +46,8 @@ The same app wrapped in a [Neutralino.js](https://neutralino.js.org) desktop she
 └── tests/
     ├── layout.test.js    # Self-check for layout and character logic
     ├── perf.test.js      # Profiler math + layout benchmark
-    └── sprites.test.js   # Verifies support lists against sprite files
+    ├── sprites.test.js   # Verifies support lists against sprite files
+    └── palette.test.js   # Verifies palette sampling math
 ```
 
 ## 🔧 Installation
@@ -75,7 +77,7 @@ npm run build
 npm run preview
 ```
 
-The build outputs static HTML/JS/CSS into `dist/` with relative paths, ready to drop onto GitHub Pages, Netlify, Cloudflare Workers or any static host (or bundle into a Tauri shell).
+The build outputs static HTML/JS/CSS into `dist/` with relative paths, ready to drop onto GitHub Pages, Netlify, Cloudflare Workers or any static host.
 
 ### Type check and self-checks
 

@@ -16,7 +16,7 @@
         document.documentElement.dataset.theme = theme;
         const palette = storedPalette ?? "amber";
         if (palette !== "amber") document.documentElement.dataset.palette = palette;
-        const tints = { amber: ["#fff8f2", "#17120c"], verdant: ["#f8faf0", "#11140c"], azure: ["#f9f9ff", "#111318"] };
+        const tints = { amber: ["#fff8f2", "#17120c"], verdant: ["#f8faf0", "#11140c"], azure: ["#f9f9ff", "#111318"], violet: ["#fef7ff", "#141218"], rose: ["#fff2f3", "#170c0d"], teal: ["#f2ffff", "#0c1717"] };
         document.querySelector('meta[name="theme-color"]').content = (tints[palette] ?? tints.amber)[theme === "light" ? 0 : 1];
     </script>
     <meta name="description" content="A tool for creating images with the Metal Slug font.">
