@@ -107,6 +107,7 @@ export function ThemeToggle(): JSX.Element {
 
 export function PaletteMenu(): JSX.Element {
     const [open, setOpen] = createSignal(false);
+    let toggleBtn!: HTMLButtonElement;
     const stored = document.documentElement.dataset.palette ?? "amber";
     const [current, setCurrent] = createSignal(PALETTES.some((p) => p.id === stored) ? stored : "amber");
 
@@ -129,6 +130,7 @@ export function PaletteMenu(): JSX.Element {
                 <div class="fixed inset-0 z-40" onClick={() => setOpen(false)} />
             </Show>
             <button
+                ref={toggleBtn}
                 type="button"
                 class="icon-btn relative z-50"
                 onClick={() => setOpen(!open())}
@@ -138,7 +140,16 @@ export function PaletteMenu(): JSX.Element {
                 <Palette size={20} />
             </button>
             <Show when={open()}>
-                <div class="menu-in absolute right-0 top-12 z-50 w-48 origin-top-right rounded-xl bg-surface-container p-2 shadow-e2" role="menu">
+                <div
+                    class="menu-in absolute right-0 top-12 z-50 w-48 origin-top-right rounded-xl bg-surface-container p-2 shadow-e2"
+                    role="menu"
+                    onKeyDown={(e) => {
+                        if (e.key === "Escape") {
+                            setOpen(false);
+                            toggleBtn.focus();
+                        }
+                    }}
+                >
                     <For each={PALETTES}>
                         {(p) => (
                             <button
