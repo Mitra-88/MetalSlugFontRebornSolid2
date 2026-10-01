@@ -788,7 +788,7 @@ body {
 .m3-field textarea {
     width: 100%;
     min-height: 120px;
-    padding: 26px 16px 10px;
+    padding: 26px 16px 30px;
     resize: vertical;
     background: transparent;
     color: var(--m3-on-surface);
@@ -798,6 +798,18 @@ body {
     font-size: 1rem;
     line-height: 1.5rem;
     transition: border-color 150ms var(--ease-standard), box-shadow 150ms var(--ease-standard), background-color 150ms var(--ease-standard);
+}
+
+.m3-field textarea::-webkit-resizer {
+    background: linear-gradient(
+        135deg,
+        transparent 0 6px,
+        var(--m3-outline-variant) 6px 8px,
+        transparent 8px 12px,
+        var(--m3-outline-variant) 12px 14px,
+        transparent 14px
+    );
+    border-bottom-right-radius: 14px;
 }
 
 .m3-field textarea:hover {
