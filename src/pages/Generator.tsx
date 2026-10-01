@@ -29,10 +29,25 @@ interface SegmentedProps<T extends string | number> {
     onChange: (value: T) => void;
 }
 
+function radioNav(e: KeyboardEvent, count: number, current: number, select: (i: number) => void): void {
+    const delta = e.key === "ArrowRight" || e.key === "ArrowDown" ? 1 : e.key === "ArrowLeft" || e.key === "ArrowUp" ? -1 : 0;
+    if (!delta && e.key !== "Home" && e.key !== "End") return;
+    e.preventDefault();
+    const next = e.key === "Home" ? 0 : e.key === "End" ? count - 1 : Math.max(0, Math.min(count - 1, current + delta));
+    if (next === current) return;
+    select(next);
+    (e.currentTarget as HTMLElement).querySelectorAll<HTMLButtonElement>("button")[next]?.focus();
+}
+
 function Segmented<T extends string | number>(props: SegmentedProps<T>): JSX.Element {
     const index = () => Math.max(0, props.options.findIndex((o) => o.value === props.value));
     return (
-        <div class="m3-seg bg-surface-highest" role="radiogroup" aria-label={props.label}>
+        <div
+            class="m3-seg bg-surface-highest"
+            role="radiogroup"
+            aria-label={props.label}
+            onKeyDown={(e) => radioNav(e, props.options.length, index(), (i) => props.onChange(props.options[i].value))}
+        >
             <div
                 class="m3-seg-thumb"
                 style={{ width: `${100 / props.options.length}%`, transform: `translateX(${index() * 100}%)` }}
@@ -43,6 +58,7 @@ function Segmented<T extends string | number>(props: SegmentedProps<T>): JSX.Ele
                         type="button"
                         role="radio"
                         aria-checked={o.value === props.value ? "true" : "false"}
+                        tabindex={o.value === props.value ? 0 : -1}
                         class={{ "m3-seg-btn": true, selected: o.value === props.value }}
                         onClick={() => props.onChange(o.value)}
                     >
@@ -59,13 +75,19 @@ function Segmented<T extends string | number>(props: SegmentedProps<T>): JSX.Ele
 
 function ColorChips(props: { options: ColorName[]; value: ColorName; font: FontId; onChange: (c: ColorName) => void }): JSX.Element {
     return (
-        <div class="flex flex-wrap gap-2" role="radiogroup" aria-label="Color">
+        <div
+            class="flex flex-wrap gap-2"
+            role="radiogroup"
+            aria-label="Color"
+            onKeyDown={(e) => radioNav(e, props.options.length, props.options.indexOf(props.value), (i) => props.onChange(props.options[i]))}
+        >
             <For each={props.options}>
                 {(c) => (
                     <button
                         type="button"
                         role="radio"
                         aria-checked={c === props.value ? "true" : "false"}
+                        tabindex={c === props.value ? 0 : -1}
                         class={{ "m3-chip": true, selected: c === props.value }}
                         onClick={() => props.onChange(c)}
                     >
