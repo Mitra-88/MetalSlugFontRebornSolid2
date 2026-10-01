@@ -350,7 +350,7 @@ export default function Generator(): JSX.Element {
         >
             <div class="grid grid-cols-1 items-start gap-6 lg:grid-cols-[400px_1fr]">
                 <section class="rise-in card p-5 sm:p-6">
-                    <h1 class="text-headline-s">Forge pixel text</h1>
+                    <h1 class="text-headline-s">Pixel text</h1>
                     <p class="mt-1 text-body-m text-on-surface-variant">
                         Type anything and watch it render live with the classic Metal Slug arcade sprites.
                     </p>
