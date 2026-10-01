@@ -1,4 +1,4 @@
-import { For, Show, createSignal, onSettled } from "solid-js";
+import { For, Show, createEffect, createSignal, onSettled } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { ArrowLeft, Check, Moon, Palette, Sun } from "./lib/icons.tsx";
 import type { ColorName, FontId } from "./lib/fonts.ts";
@@ -45,9 +45,12 @@ export function ColorDot(props: { font: FontId; color: ColorName; size?: number 
     const px = () => props.size ?? 14;
     let canvas!: HTMLCanvasElement;
 
-    onSettled(() => {
-        paletteFor(props.font, props.color).then((palette) => drawColorIcon(canvas, palette, 2));
-    });
+    createEffect(
+        () => [props.font, props.color] as const,
+        ([font, color]) => {
+            paletteFor(font, color).then((palette) => drawColorIcon(canvas, palette, 2));
+        },
+    );
 
     return (
         <span
