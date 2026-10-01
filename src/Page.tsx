@@ -68,7 +68,9 @@ export function ThemeToggle(): JSX.Element {
         const next = theme() === "dark" ? "light" : "dark";
         withThemeTransition(() => {
             document.documentElement.dataset.theme = next;
-            localStorage.setItem("msfb-theme", next);
+            try {
+                localStorage.setItem("msfb-theme", next);
+            } catch {}
             applyThemeColorMeta(next);
         });
         setTheme(next);
@@ -77,7 +79,11 @@ export function ThemeToggle(): JSX.Element {
     onSettled(() => {
         const scheme = window.matchMedia("(prefers-color-scheme: light)");
         const onChange = (e: MediaQueryListEvent): void => {
-            if (localStorage.getItem("msfb-theme")) return;
+            try {
+                if (localStorage.getItem("msfb-theme")) return;
+            } catch {
+                return;
+            }
             const next = e.matches ? "light" : "dark";
             document.documentElement.dataset.theme = next;
             applyThemeColorMeta(next);
@@ -105,7 +111,9 @@ export function PaletteMenu(): JSX.Element {
         withThemeTransition(() => {
             if (id === "amber") delete document.documentElement.dataset.palette;
             else document.documentElement.dataset.palette = id;
-            localStorage.setItem("msfb-palette", id);
+            try {
+                localStorage.setItem("msfb-palette", id);
+            } catch {}
             applyThemeColorMeta(document.documentElement.dataset.theme ?? "dark");
         });
         setCurrent(id);

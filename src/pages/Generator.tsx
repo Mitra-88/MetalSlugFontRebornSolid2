@@ -230,7 +230,9 @@ export default function Generator(): JSX.Element {
     }
 
     function saveSettings(): void {
-        localStorage.setItem(SETTINGS_KEY, JSON.stringify({ font: font(), color: color(), scale: scale() }));
+        try {
+            localStorage.setItem(SETTINGS_KEY, JSON.stringify({ font: font(), color: color(), scale: scale() }));
+        } catch {}
     }
 
     const revalidate = (apply: () => void): void => {
