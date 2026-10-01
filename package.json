@@ -31,7 +31,8 @@
     "@types/node": "^24",
     "tailwindcss": "^4.3.3",
     "typescript": "^5",
-    "vite": "^8.3.1"
+    "vite": "^8.3.1",
+    "wrangler": "^4.146.0"
   },
   "engines": {
     "node": ">=24.21.0"
