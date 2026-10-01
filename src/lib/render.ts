@@ -143,8 +143,8 @@ export function computeLayout(
     let totalHeight = 0;
 
     for (let i = 0; i < lines.length; i++) {
-        const line = lines[i].trim();
-        if (!line) {
+        const rawLine = lines[i].replace(/\r$/, "");
+        if (!rawLine.trim()) {
             lineData.push({ empty: true, height: EMPTY_LINE_HEIGHT });
             totalHeight += EMPTY_LINE_HEIGHT;
             if (i < lines.length - 1) totalHeight += LINE_SPACING;
@@ -155,7 +155,7 @@ export function computeLayout(
         let lineHeight = 0;
         const charData: CharData[] = [];
 
-        for (const c of [...line]) {
+        for (const c of [...rawLine]) {
             if (/\s/.test(c)) {
                 charData.push({ space: true, width: SPACE_WIDTH, height: 0 });
                 lineWidth += SPACE_WIDTH;

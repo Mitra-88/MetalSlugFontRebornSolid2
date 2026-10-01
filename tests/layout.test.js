@@ -70,6 +70,12 @@ const trailing = computeLayout(["a", ""], measure, "1", "blue");
 assert.equal(trailing.height, 20 + 15 + 50);
 assert.equal(computeLayout([""], measure, "1", "blue").height, 50);
 
+const indented = computeLayout(["  hi"], measure, "1", "blue");
+assert.equal(indented.width, 25 + 25 + 20, "leading spaces render as advances");
+const crlf = computeLayout(["a\r", "b"], measure, "1", "blue");
+assert.equal(crlf.lines[0].chars.length, 1, "trailing CR from CRLF is stripped, not an advance");
+assert.deepEqual(computeLayout(["   "], measure, "1", "blue"), { lines: [{ empty: true, height: 50 }], width: 0, height: 50 }, "whitespace-only lines stay empty");
+
 const skippedLayout = computeLayout(["a@b"], measure, "1", "blue");
 assert.equal(skippedLayout.width, 20, "unsupported characters are skipped, not fatal");
 assert.equal(skippedLayout.lines[0].chars.length, 2);
