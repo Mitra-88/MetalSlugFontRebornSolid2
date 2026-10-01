@@ -14,6 +14,10 @@ Visit the live instance: [https://metalslugfontrebornsolid2.mitra88dev.workers.d
 - Fast by construction: sprites decode once into GPU bitmaps via `createImageBitmap`, layouts are memoized per text, the rest of the font warms up during idle time, and a built-in sampling profiler shows render phase timings (load, layout, draw) with p50/p95 stats right in the preview panel.
 - Adaptive layout for desktop and mobile, no router, no server.
 
+## 🖥️ Desktop edition
+
+The same app wrapped in a [Neutralino.js](https://neutralino.js.org) desktop shell for Windows, macOS and Linux lives in the sibling repository: [MetalSlugFontRebornDesktop](https://github.com/Mitra-88/MetalSlugFontRebornDesktop).
+
 ## 📁 Project Structure
 
 ```
