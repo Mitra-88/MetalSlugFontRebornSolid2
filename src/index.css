@@ -1,5 +1,21 @@
 @import "tailwindcss";
-@import "material-icons/iconfont/round.css";
+
+@font-face {
+    font-family: "Roboto Flex";
+    font-style: normal;
+    font-weight: 100 1000;
+    font-display: swap;
+    src: url("./fonts/roboto-flex-latin.woff2") format("woff2");
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+    font-family: "Material Icons Round";
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url("./fonts/icons.woff2") format("woff2");
+}
 
 @view-transition {
     navigation: auto;
@@ -590,7 +606,7 @@ body {
     cursor: pointer;
     overflow: hidden;
     white-space: nowrap;
-    transition: transform 300ms var(--ease-spring), box-shadow 200ms var(--ease-standard), background-color 200ms var(--ease-standard);
+    transition: transform 300ms var(--ease-spring), background-color 200ms var(--ease-standard);
     -webkit-tap-highlight-color: transparent;
 }
 
@@ -863,7 +879,6 @@ body {
     background: var(--m3-surface-container-low);
     border-radius: var(--radius-card);
     box-shadow: var(--shadow-e1);
-    transition: box-shadow 250ms var(--ease-standard);
 }
 
 .card:hover {
@@ -1039,6 +1054,18 @@ body {
 }
 
 .material-icons-round {
+    font-family: "Material Icons Round";
+    font-weight: normal;
+    font-style: normal;
+    line-height: 1;
+    letter-spacing: normal;
+    text-transform: none;
+    display: inline-block;
+    white-space: nowrap;
+    word-wrap: normal;
+    direction: ltr;
+    font-feature-settings: "liga";
+    -webkit-font-smoothing: antialiased;
     user-select: none;
 }
 

@@ -22,13 +22,13 @@
   "homepage": "https://github.com/Mitra-88/MetalSlugFontRebornSolid2#readme",
   "dependencies": {
     "@solidjs/web": "next",
-    "material-icons": "^1.13.14",
     "solid-js": "next"
   },
   "devDependencies": {
     "@solidjs/vite-plugin": "next",
     "@tailwindcss/vite": "^4.3.3",
     "@types/node": "^24",
+    "material-icons": "^1.13.14",
     "tailwindcss": "^4.3.3",
     "typescript": "^5",
     "vite": "^8.3.1",
