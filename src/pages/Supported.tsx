@@ -65,7 +65,7 @@ export default function Supported(): JSX.Element {
                                                     <For each={row.colors}>
                                                         {(c) => (
                                                             <span class="chip-static">
-                                                                <ColorDot color={c} />
+                                                                <ColorDot font={n} color={c} />
                                                                 {capitalize(c)}
                                                             </span>
                                                         )}

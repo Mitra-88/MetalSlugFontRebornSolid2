@@ -1,7 +1,8 @@
 import { For, Show, createSignal, onSettled } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { ArrowLeft, Check, Moon, Palette, Sun } from "./lib/icons.tsx";
-import type { ColorName } from "./lib/fonts.ts";
+import type { ColorName, FontId } from "./lib/fonts.ts";
+import { drawColorIcon, paletteFor } from "./lib/palette.ts";
 
 export const capitalize = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1);
 
@@ -40,8 +41,22 @@ function withThemeTransition(apply: () => void): void {
     doc.startViewTransition(apply);
 }
 
-export function ColorDot(props: { color: ColorName }): JSX.Element {
-    return <span class="color-dot" style={{ background: COLOR_HEX[props.color] ?? "var(--m3-outline)" }} />;
+export function ColorDot(props: { font: FontId; color: ColorName; size?: number }): JSX.Element {
+    const px = () => props.size ?? 14;
+    let canvas!: HTMLCanvasElement;
+
+    onSettled(() => {
+        paletteFor(props.font, props.color).then((palette) => drawColorIcon(canvas, palette, 2));
+    });
+
+    return (
+        <span
+            class="color-pie"
+            style={{ width: `${px()}px`, height: `${px()}px`, "background-color": COLOR_HEX[props.color] }}
+        >
+            <canvas ref={canvas} width={px() * 2} height={px() * 2} />
+        </span>
+    );
 }
 
 export function ThemeToggle(): JSX.Element {

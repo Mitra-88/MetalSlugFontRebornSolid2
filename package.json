@@ -8,7 +8,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "node tests/layout.test.js && node tests/perf.test.js && node tests/sprites.test.js",
+    "test": "node tests/layout.test.js && node tests/perf.test.js && node tests/sprites.test.js && node tests/palette.test.js",
     "typecheck": "tsc --noEmit"
   },
   "repository": {

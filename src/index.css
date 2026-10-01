@@ -706,12 +706,17 @@ body {
     animation: m3-spin 1.1s linear infinite;
 }
 
-.color-dot {
-    width: 14px;
-    height: 14px;
+.color-pie {
+    display: inline-flex;
     border-radius: 999px;
-    border: 1px solid rgb(0 0 0 / 0.15);
+    overflow: hidden;
     flex-shrink: 0;
+}
+
+.color-pie canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
 }
 
 .rise-in {

@@ -45,7 +45,7 @@ export default function Examples(): JSX.Element {
                                     {(color) => (
                                         <li class="flex items-center gap-3 rounded-2xl bg-surface-container px-3 py-2">
                                             <span class="flex w-16 shrink-0 items-center gap-2 text-label-m text-on-surface-variant">
-                                                <ColorDot color={color} />
+                                                <ColorDot font={ex.font} color={color} />
                                                 {capitalize(color)}
                                             </span>
                                             <img
