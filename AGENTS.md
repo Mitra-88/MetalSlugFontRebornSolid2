@@ -161,6 +161,7 @@ UI state is one `status` signal (`idle | loading | success | error`). The canvas
 - Theme and palette are applied pre-paint by an inline script in each HTML head (`msfb-theme` and `msfb-palette` in localStorage, falling back to `prefers-color-scheme` and amber); keep the script inline, after the theme-color meta, and before any painted content so there is no flash of the wrong scheme.
 - The IAB/Playwright `fill("")` and plain key presses may not edit a textarea in the in-app browser (default text-edit actions don't run). When testing text behavior in automation, set `value` and dispatch an `input` event instead; the app itself handles empty input correctly.
 - Font asset directories are `ms-<color>` with colors `blue`, `orange`, `gold`, `yellow`; a color not in `FONT_SUPPORT[font].colors` has no directory, which is why the color chips are re-derived on font switch.
+- TypeScript 7 (the native Go-based compiler) runs `typecheck` via the same `tsc` bin. Unlike TS 5 it errors on side-effect imports of files without declarations, which is what `src/css.d.ts` and its `declare module "*.css"` exist for; extend that file if another non-TS import type is added.
 - ponytail: text input has no length cap; oversized outputs are caught by the 16384px hard limit and reported as an error, which covers the pathological cases without buffering logic. If abusive giant texts ever become a real problem, add a max character count at the textarea.
 
 ## Where to look things up
