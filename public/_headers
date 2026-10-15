@@ -19,12 +19,12 @@
 /assets/*.woff
 	Cache-Control: public, max-age=31556952, immutable
 
-# Sprites, examples and icons keep stable names, one day only
+# Sprites, examples and icons keep stable names, one month in browser caches
 /assets/fonts/*
-	Cache-Control: public, max-age=86400
+	Cache-Control: public, max-age=2592000
 
 /assets/examples/*
-	Cache-Control: public, max-age=86400
+	Cache-Control: public, max-age=2592000
 
 /assets/icons/*
-	Cache-Control: public, max-age=86400
+	Cache-Control: public, max-age=2592000
