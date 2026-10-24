@@ -54,27 +54,27 @@ The same app wrapped in a [Neutralino.js](https://neutralino.js.org) desktop she
 
 ### Prerequisites
 
-- Node.js 24.21.0 or newer
+- Bun 1.4.4 or newer
 
 ### Setup
 
 ```
 git clone https://github.com/Mitra-88/MetalSlugFontRebornSolid2.git
 cd MetalSlugFontRebornSolid2
-npm install
+bun install
 ```
 
 ### Develop
 
 ```
-npm run dev
+bun run dev
 ```
 
 ### Build and preview
 
 ```
-npm run build
-npm run preview
+bun run build
+bun run preview
 ```
 
 The build outputs static HTML/JS/CSS into `dist/` with relative paths, ready to drop onto GitHub Pages, Netlify, Cloudflare Workers or any static host.
@@ -84,17 +84,17 @@ The build outputs static HTML/JS/CSS into `dist/` with relative paths, ready to 
 The site runs as a Worker with static assets. Connect the repository in the Cloudflare dashboard (Workers Builds) and the pipeline is:
 
 ```
-npm run build
-npx wrangler deploy
+bun run build
+bunx wrangler deploy
 ```
 
-Deployment settings live in `wrangler.jsonc`, caching and security headers in `public/_headers` (copied into `dist/` by the build). Hashed bundles and fonts are cached forever, sprites and example images keep their stable filenames and are cached for 30 days. If the build warns about an unsupported engine, set a `NODE_VERSION` build variable (the repo requires Node 24.21.0 or newer) in the Worker's build settings.
+Deployment settings live in `wrangler.jsonc`, caching and security headers in `public/_headers` (copied into `dist/` by the build). Hashed bundles and fonts are cached forever, sprites and example images keep their stable filenames and are cached for 30 days. The build image preinstalls Bun (1.2.15 by default), so set `BUN_VERSION=1.4.4` in the Worker's build settings. If dependency install does not pick up `bun.lock`, set `SKIP_DEPENDENCY_INSTALL=1` and make the build command `bun install && bun run build`.
 
 ### Type check and self-checks
 
 ```
-npm run typecheck
-npm test
+bun run typecheck
+bun run test
 ```
 
 ## 📄 License

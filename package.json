@@ -1,14 +1,15 @@
 {
   "name": "metalslugfontreborn-solid2",
   "version": "1.0.0",
-  "description": "Web app version of [MetalSlugFontReborn](https://github.com/Mitra-88/MetalSlugFontReborn). _This branch reimplements it to run entirely client-side_",
+  "description": "Web app version of [MetalSlugFontReborn](https://github.com/Mitra-88/MetalSlugFontReborn). Reimplemented to run entirely client-side using Solid2 ",
   "private": true,
+  "packageManager": "bun@1.4.4",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "node tests/layout.test.js && node tests/perf.test.js && node tests/sprites.test.js && node tests/palette.test.js",
+    "test": "bun tests/layout.test.js && bun tests/perf.test.js && bun tests/sprites.test.js && bun tests/palette.test.js",
     "typecheck": "tsc --noEmit"
   },
   "repository": {
@@ -21,20 +22,20 @@
   },
   "homepage": "https://github.com/Mitra-88/MetalSlugFontRebornSolid2#readme",
   "dependencies": {
-    "@solidjs/web": "^2.0.0-rc.15",
-    "solid-js": "^2.0.0-rc.15"
+    "@solidjs/web": "^2.0.0-rc.18",
+    "solid-js": "^2.0.0-rc.18"
   },
   "devDependencies": {
-    "@solidjs/vite-plugin": "^3.0.0-next.50",
+    "@solidjs/vite-plugin": "^3.0.0-next.51",
     "@tailwindcss/vite": "^4.3.3",
-    "@types/node": "^24",
+    "@types/node": "^26.6.5",
     "material-icons": "^1.13.14",
     "tailwindcss": "^4.3.3",
     "typescript": "^7.0.2",
-    "vite": "^8.3.1",
-    "wrangler": "^4.151.0"
+    "vite": "^8.3.5",
+    "wrangler": "^4.152.0"
   },
   "engines": {
-    "node": ">=24.21.0"
+    "bun": ">=1.4.4"
   }
 }
