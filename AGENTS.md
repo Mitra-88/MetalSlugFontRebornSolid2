@@ -2,210 +2,78 @@
 
 ## What this is
 
-MetalSlugFontRebornSolid2: a client-side web tool that renders text as images using Metal Slug sprite fonts. Type text, pick a font variant (1 to 5), a color, an output scale, and the app draws the text onto a canvas from per-character PNGs, then offers a PNG download. Two reference pages round it out: an examples gallery and a character support table.
+MetalSlugFontRebornSolid2: a client-side tool that renders text as PNGs from per-character Metal Slug sprite PNGs. Five font variants, a color, a scale; a canvas preview with a built-in sampling profiler; an examples gallery and a character support table.
 
-The stack is Solid 2.0 RC (`solid-js@next` + `@solidjs/web@next`, TypeScript) + Vite 8 (MPA, three HTML entries, `@solidjs/vite-plugin` with the native compiler) + Tailwind CSS 4, styled as a hand-rolled Material 3 system (three palettes, light and dark schemes, see Design system below) with a built-in sampling profiler for the render pipeline. No router, no SSR, no server: `npm run build` emits static files with relative paths that run from any static host, or from the Neutralino.js desktop shell in the sibling repo MetalSlugFontRebornDesktop.
+Stack: Solid 2.0 RC (`solid-js` + `@solidjs/web`, TypeScript) + Vite 8 (MPA, three HTML entries) + Tailwind CSS 4 with a hand-rolled Material 3 system. No router, no SSR, no server. `bun run build` emits static files with relative paths for any host or the sibling Neutralino desktop repo (MetalSlugFontRebornDesktop).
 
-## Coding rules (mandatory: apply to every change)
+## Commands
 
-**Purpose:** implement only what is genuinely necessary for the requested feature.
+- Bun 1.4.4. `bun install` once; `bun.lock` is committed. `node_modules/` is still required (Bun resolves through it) and is disposable: `bun install --frozen-lockfile` restores it.
+- `bun run dev` (port 5173), `bun run build`, `bun run preview`, `bun run typecheck`, `bun run test`.
+- `bun run test` runs four assert-based self-checks, no test framework: `layout`, `perf`, `sprites`, `palette`. One check alone: `bun tests/sprites.test.js`. Never use `bun test`: that is Bun's built-in runner with different semantics.
+- There is no lint or formatter. `typecheck` + `test` + `build` are the gate.
+- TypeScript 7 is the native compiler behind the `tsc` bin. `@types/node` stays because `vite.config.ts` and the tests use `node:` builtins.
+- `tsconfig.json` is minified to one line; leave its formatting alone.
 
-**Core rules**
+## Coding rules
 
-- No overengineering.
-- No unnecessary abstractions.
-- No generic framework-like constructs when a simple, direct solution suffices.
-- No "future-proofing" without a concrete need.
-- No dead helper classes, wrappers, managers, registry layers, or utility collections without a clear current use case.
-- No artificially bloated architectures.
+- Implement the smallest clean solution; no speculative abstraction, options, wrappers, factories or "future-proofing".
+- No comments in code. Rationale, invariants and gotchas live in this file, one home. Do not add inline comments, JSDoc or docs.
+- No em dashes anywhere, in code, docs or config: use commas, colons or plain hyphens.
+- Refactor only for a real benefit (readability, duplication, a necessary fix), never for style.
 
-**Style guidelines**
+## Rendering pipeline
 
-- Write simple, direct, readable code.
-- Prefer concrete implementations over unnecessary generalization.
-- Keep classes small and single-purpose.
-- Keep methods short and clear.
-- Use self-explanatory names instead of comments. **never add comments in code**, every rationale, invariant, and quirk lives in this file instead, so it has exactly one home and can't drift from the code. Don't re-add inline comments or apis/docs; put the knowledge here.
-- Never use em dashes. In any file (docs, config comments, chat messages, code strings) write the sentence with commas, colons, or plain hyphens instead.
+Order in which `Generator.tsx` drives it:
 
-**What to avoid**
+1. `src/lib/fonts.ts` owns `FONT_SUPPORT` (per font: colors, case, digits, symbols), `SPECIAL_CHARACTERS` and `FONT_SYMBOL_OVERRIDES` (per-font glyph exceptions). `getCharPath` is the only gatekeeper and returns null for unsupported characters, so a character can never borrow another font's sprite. Font 5 is uppercase-only, digits 1 to 9; the generator uppercases its input, fonts 1 to 4 keep lowercase. Unsupported characters are skipped and reported, never an error; only zero drawable characters fails (`empty`).
+2. `src/lib/render.ts` keeps `imgCache` and `failedLoads`. Sprites decode once via `createImageBitmap`, falling back to `HTMLImageElement`; 8s timeout per attempt, one retry after 50ms, then the path lands in `failedLoads` until `resetFailures()`. Loading is lazy: `preloadIdle` warms the current font/color in batches of 10 during idle, cancelling and deduping per `font|color`; generation awaits only `getMissingPaths`.
+3. `getLayout` is an LRU memo keyed `font|color|text`, cap 48, cached only when every sprite exists. `drawLayout` draws bottom-aligned glyphs with `imageSmoothingEnabled = false`; scale is canvas size plus `ctx.scale`.
+4. Layout metrics live only in `fonts.ts`: whitespace 25px advance, empty line 50px, 15px between lines. Output above `SAFE_LIMIT` 8192 warns, above `HARD_LIMIT` 16384 is refused (`too-large`).
+5. `src/lib/perf.ts` records one sample per render (phases `load`, `layout`, residual `draw`, metadata sprites/cacheHits/chars) in a 100-slot ring; `stats()` gives min/p50/p95/max. Failed renders call `perf.cancel` so error attempts never pollute stats. The preview shows chips for the last sample and a Details table of the last 5 runs plus a p95 row.
+6. Download: `canvas.toBlob` + object URL + synthetic anchor click.
 
-- AI-typical "enterprise" patterns for small features.
-- Excessive use of interfaces without real added value.
-- Builders, factories, services, providers, adapters, etc., unless actually needed.
-- Defensive abstractions for hypothetical future use cases.
-- Multi-layered architecture for trivial logic.
-- Duplicated helper logic in "Utils" just to make code look "cleaner".
-- Complex configuration or event systems for simple flows.
+Invariants:
 
-**Implementation principle, for every change:**
+- Every async path is guarded by the monotonic `genId`, incremented by any input; stale generates discard their result.
+- Font, color and scale changes all funnel through `revalidate` (clear debounce, bump `genId`, apply, `flush()`, save, generate). Do not add a path around it.
+- `status` is one signal: `idle | loading | success | error`. The preview canvas is always mounted, overlays are absolutely positioned siblings. Never wrap it in `<Show>`: that desynced the ref and drew into a detached canvas.
+- Error and empty transitions must clear `warning`, `imgMeta`, `sample` and `errorKind`, otherwise stale dimensions and profiler numbers survive. The chips row renders only while `imgMeta` is non-empty.
+- `failed` errors grow a Try again button and are retryable; `empty` and `too-large` are not.
 
-1. What is the specific requirement?
-2. What is the smallest clean solution?
-3. Implement exactly that, nothing beyond it.
+## Solid 2.0 RC quirks
 
-**Refactoring** happens only for a real benefit: better readability, less duplication, clearer responsibilities, or a necessary technical fix, never purely stylistic preference.
+- DOM APIs come from `@solidjs/web` (`render`, `Dynamic`, JSX types via `jsxImportSource`). `onMount` is `onSettled`; `classList` is gone, use the object/array `class` forms.
+- Setters do not update reads until the microtask flush: read-after-write needs a local variable or `flush()` (see `revalidate`).
+- Before non-trivial Solid work, read `node_modules/solid-js/CHEATSHEET.md` from the installed RC. It is the authoritative reference.
 
-**When in doubt, prefer:** less code, fewer files, less abstraction, less magic.
+## Material 3 design system
 
-**Goal:** the code should feel pragmatically and deliberately written by an experienced developer, not like generic AI output.
+- `src/index.css` hand-rolls M3: color roles as `--m3-*` CSS variables exposed to Tailwind via `@theme inline`. Six seed palettes (amber default, verdant, azure, violet, rose, teal), each light and dark; error tokens are shared.
+- Keep the CSS ordering: the palette+dark selector outranks the plain dark block, and palette-light beats `:root` by source order.
+- Theme and palette persist as `msfb-theme` and `msfb-palette`. Each HTML head has an inline pre-paint boot script that sets `data-theme`/`data-palette` and the `theme-color` meta; `ThemeToggle`/`PaletteMenu` reuse `SCHEME_TINTS` from `Page.tsx`. Adding a palette means updating the inline script, `PALETTES` and `SCHEME_TINTS` together.
+- All fonts are self-hosted in `src/fonts/` (Roboto Flex latin variable, icons subset), `font-display: swap`. Never reintroduce third-party font links or preconnects; that was a Lighthouse finding.
+- Never hardcode a theme hex in JSX. `COLOR_HEX` in `Page.tsx` holds sprite swatch colors, not theme colors.
 
-## Ponytail, lazy senior dev mode
+## Edit rules
 
-Adapted from [DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail/blob/main/AGENTS.md), commit `b6c04480c03e8db2f035751d7c46289779ec3362`.
+- Entry files stay in `src/`, page components in `src/pages/`. On this case-insensitive filesystem `examples.tsx` and `Examples.tsx` collide, so entry and page names must never match; the `pages/` split is the guard.
+- Asset URLs stay relative (`./assets/...`): that is what makes one build work at a domain root and under a subpath.
+- `Supported.tsx` derives its table from `FONT_SUPPORT`. Only the "No sprites in any font" note is hardcoded and must be updated when support changes.
+- Sprites live in `public/assets/fonts/font-<n>/ms-<color>/{letters,numbers,symbols}`; colors are blue, orange, gold, yellow and vary per font. `tests/sprites.test.js` compares `FONT_SUPPORT` against the files in both directions, so run it after any asset change. Accent numbering is per font (Font 1 E-3 is é, Font 2 E-4), which is why `FONT_SYMBOL_OVERRIDES` exists.
+- Adding or renaming a perf phase means updating `perf.ts`, the Details table columns and `tests/perf.test.js` together.
+- Icons are 11 Material Symbols ligatures aliased in `src/lib/icons.tsx` and served from the ~1.7KB `src/fonts/icons.woff2`. The `material-icons` devDependency is only the subset source; nothing imports its CSS. Regeneration is a fontTools job with two traps: the font uses `rlig`, not `liga`, and the icon names share component letters, so feature closure pulls in over a thousand glyphs. Prune the `rlig` LigatureSubst tables to the wanted names, then subset with an explicit glyph list (21 component letters plus the 11 icon glyphs). No subset script is checked in. Verify each icon renders as one glyph, not as letters.
+- The Cloudflare deploy is a Worker with static assets: `wrangler.jsonc` points at `dist`, keeps `workers_dev` and `preview_urls` on, and `public/_headers` sets caching (hashed bundles and fonts immutable, stable-named sprites/examples/icons 30 days) and security headers. Deploy with `bun run build` then `bunx wrangler deploy`; Workers Builds ships Bun 1.2.15 by default, so set `BUN_VERSION=1.4.4`. Answer Cloudflare questions from the Cloudflare docs, not memory.
 
-You are a lazy senior developer. Lazy means efficient, not careless. The best code is the code never written.
+## Gotchas
 
-Before writing any code, stop at the first rung that holds:
+- The textarea is uncontrolled on purpose and has IME guards (`compositionstart`/`compositionend`). Do not bind `value`. In automation, set `.value` and dispatch an `input` event; simulated typing and `fill("")` can silently do nothing.
+- A sprite load failure is recoverable; do not turn it into a dead end. Error kinds exist so only `failed` offers retry.
+- The floating field label needs its opaque background, or the border shows through the text.
+- `src/css.d.ts` exists because TypeScript 7 rejects side-effect imports of undeclared files; extend it for any new non-TS import.
+- `ponytail:` text input has no length cap. Oversized outputs are caught by the 16384px hard limit, which is enough until abusive giant texts become real; then cap the textarea.
 
-1. Does this need to be built at all? (YAGNI)
-2. Does it already exist in this codebase? Reuse the helper, util, or pattern that's already here, don't re-write it.
-3. Does the standard library already do this? Use it.
-4. Does a native platform feature cover it? Use it.
-5. Does an already-installed dependency solve it? Use it.
-6. Can this be one line? Make it one line.
-7. Only then: write the minimum code that works.
+## Reference
 
-The ladder runs after you understand the problem, not instead of it: read the task and the code it touches, trace the real flow end to end, then climb.
-
-Bug fix = root cause, not symptom: a report names a symptom. Grep every caller of the function you touch and fix the shared function once, one guard there is a smaller diff than one per caller, and patching only the path the ticket names leaves a sibling caller still broken.
-
-Rules:
-
-- No abstractions that weren't explicitly requested.
-- No new dependency if it can be avoided.
-- No boilerplate nobody asked for.
-- Deletion over addition. Boring over clever. Fewest files possible.
-- Shortest working diff wins, but only once you understand the problem. The smallest change in the wrong place isn't lazy, it's a second bug.
-- Question complex requests: "Do you actually need X, or does Y cover it?"
-- Pick the edge-case-correct option when two stdlib approaches are the same size, lazy means less code, not the flimsier algorithm.
-- Mark deliberate simplifications that cut a real corner with a known ceiling (global lock, O(n²) scan, naive heuristic) with a `ponytail:` note naming the ceiling and upgrade path; in this repo that note lives here in AGENTS.md (next to the relevant section or in Gotchas & quirks).
-
-Not lazy about: understanding the problem (read it fully and trace the real flow before picking a rung, a small diff you don't understand is just laziness dressed up as efficiency), input validation at trust boundaries, error handling that prevents data loss, security, accessibility, the calibration real hardware needs (the platform is never the spec ideal, a clock drifts, a sensor reads off), anything explicitly requested. Lazy code without its check is unfinished: non-trivial logic leaves ONE runnable check behind, the smallest thing that fails if the logic breaks (an assert-based demo/self-check or one small test file; no frameworks, no fixtures). Trivial one-liners need no test.
-
-(Yes, this also applies to agents working on this repo. Especially to them.)
-
-## Build & run
-
-- `npm install` once.
-- `npm run dev` for the dev server (default port 5173).
-- `npm run typecheck` type-checks with tsc (strict, no emit). `npm run build` to produce `dist/`, `npm run preview` to serve the build.
-- `npm test` runs four assert-based self-checks (plain node, no framework): `tests/layout.test.js` covers character mapping (including per-font overrides), support tables, preload lists, layout math (including unsupported-character skipping) and the layout memo; `tests/perf.test.js` covers the profiler math (with a faked clock), the ring buffer cap and a layout benchmark (24k chars in 400 lines at roughly 2 to 3 ms per op, asserted well under 50 ms); `tests/sprites.test.js` walks every font/color directory in `public/assets/fonts` and asserts `FONT_SUPPORT` matches the sprite files exactly in both directions, so no character can be declared without a sprite and no sprite can sit unreachable; `tests/palette.test.js` covers the sprite palette sampling math (`rankColors` frequency ranking with the translucent-pixel drop and the six-color cap, plus `darken`).
-
-## How it works
-
-Rendering pipeline, in the order `Generator.tsx` drives it:
-
-1. Character support: `FONT_SUPPORT` in `src/lib/fonts.ts` declares, per font, the available colors, case support, digits and symbol characters. `SPECIAL_CHARACTERS` maps a typed character to its sprite filename, with `FONT_SYMBOL_OVERRIDES` for per-font exceptions (Font 2 numbers á, é, ú differently from Font 1). `getCharPath` is the single gatekeeper: it returns null for any character `isCharSupported` rejects, so unsupported characters can never load another font's sprite. Font 5 is uppercase-only (digits 1 to 9) and the generator uppercases its input; fonts 1 to 4 keep lowercase. Unsupported characters do not error: `computeLayout` skips them, `generate` reports them via `collectUnsupported`, and only a render with zero drawable characters fails (error kind `empty`).
-2. Asset loading: `src/lib/render.ts` keeps a module-level `imgCache` Map and `failedLoads` Set. `loadImage` decodes each PNG once, preferring `createImageBitmap` (off-main-thread decode, faster `drawImage`), falling back to the `HTMLImageElement`; cache entries are uniform `{ drawable, w, h }`. Each attempt has an 8s timeout so a hung connection can never stall the pipeline, one retry follows a failure after 50ms, and a final failure lands in `failedLoads`. `resetFailures()` clears that set for the UI's manual retry. Loading is lazy: nothing loads at page boot except `preloadIdle`, which warms the rest of the current font/color during idle time in batches of 10 (chains are cancelled when the target font/color changes and deduped per target); generating only awaits the sprites the text actually needs (`getMissingPaths`).
-3. Generation: typing debounces 50ms into `generate()`. It collects unsupported characters (`collectUnsupported`) into the skipped-chips notice, awaits any missing sprites while the UI shows the loading overlay with the fetch count, then calls `renderToCanvas`. That resolves the layout through `getLayout` (an LRU memo keyed `font|color|text`, cap 48, only cached when every sprite exists), draws via `drawLayout`, and records a profiler sample; failed renders cancel their sample via `perf.cancel` so error attempts never pollute the stats. Output above 8192px sets a warning, above 16384px is refused (browser canvas limits).
-4. Layout rules baked into `computeLayout`/`drawLayout`: whitespace is a 25px advance (including leading and trailing whitespace on a line, only a trailing carriage return is stripped), an empty line is 50px tall, lines are separated by 15px, glyphs align to the bottom of their line (baseline = tallest glyph), scale multiplies via canvas dimensions plus `ctx.scale` with `imageSmoothingEnabled = false` (pixelated output).
-5. Profiling: `src/lib/perf.ts` is a sampling profiler. Each `renderToCanvas` records one sample with phases (`layout`, residual `draw`, plus `load` merged in by the generator) and metadata (sprites, cacheHits, chars) into a 100-slot ring buffer; `stats()` aggregates min/p50/p95/max per phase. The preview panel shows the last sample as chips (time, sprites, cache hit %) and a Details table with the last 5 runs plus p95.
-6. Download: `canvas.toBlob` to PNG, object URL, synthetic anchor click.
-
-Every async path is guarded by a monotonically increasing `genId` counter: any new input (typing, font/color/scale change) increments it, and a stale async generate discards its result instead of drawing. Select handlers clear the pending debounce so a slow load can't double-fire.
-
-UI state is one `status` signal (`idle | loading | success | error`). The canvas is ALWAYS mounted; the loading/idle/error overlays are absolutely positioned siblings shown on top of it. Never wrap the canvas in a `<Show>`: while the loading overlay replaced it, the ref went stale and the post-load draw hit a detached canvas, leaving the visible one empty.
-
-## Design system (Material 3)
-
-`src/index.css` hand-rolls M3 with Tailwind v4 tokens; @material/web was rejected as ~80KB of web components versus ~6KB gzipped CSS.
-
-- Color: full M3 role set (primary/on-primary/container pairs, surface container tiers, outline roles, inverse) as CSS variables `--m3-*` exposed to Tailwind via `@theme inline` as `--color-*`, so every utility is runtime themeable. Six seed palettes, each with light and dark schemes as tonal-token sets: `amber` (default, hue ~38, warm cream/amber), `verdant` (green, `[data-palette="verdant"]`), `azure` (blue, `[data-palette="azure"]`), `violet` (the Material 3 baseline purple, `[data-palette="violet"]`), `rose` (red-rose) and `teal` (teal, light primary darkened below tone 40 for AA contrast on the filled button); dark is `[data-theme="dark"]` over `:root`. The error tokens are identical in every palette. The palette+dark selector has higher specificity than the plain dark block, and palette-light beats `:root` by source order; keep that order intact when editing.
-- The palette is user-selectable through `PaletteMenu` in the app bar (persisted as `msfb-palette`), the scheme through `ThemeToggle` (persisted as `msfb-theme`). An inline boot script in each HTML head applies both before first paint and sets the single `theme-color` meta from a per-palette surface tint table; `ThemeToggle` and `PaletteMenu` update that meta at runtime using the same tint table (`SCHEME_TINTS` in `Page.tsx`). Keep the inline script and `SCHEME_TINTS` in sync when adding a palette.
-- Typography: Roboto Flex from Google Fonts (`display=swap`, system fallbacks). Hand-written M3 type-scale classes: `.text-display-s`, `.text-headline-s`, `.text-title-*`, `.text-body-*`, `.text-label-*`; `.mono` for profiler numbers. Labels, titles and the label text on buttons/segments/chips use weight 500 per spec; only the expressive headline and the error-box actions are heavier.
-- Shape: pills for buttons/segments, `rounded-card` (28px) cards, `rounded-stage` (24px) preview, outlined text field with 4px top corners and a floating label masked over the border.
-- Motion: M3 easing tokens as Tailwind `ease-*` utilities, including the M3 Expressive spring as a CSS `linear()` curve (`--ease-spring`) used for the segmented thumb, chips and button press scale. Cross-page fades come from `@view-transition { navigation: auto }`, theme and palette switches crossfade via `document.startViewTransition` (`withThemeTransition` in Page.tsx), stage overlays use `.stage-overlay`, selection checks use `.pop-in`, and the canvas pops on each successful render through the Web Animations API. `prefers-reduced-motion` kills all of it.
-- Components are plain CSS classes: `.btn-filled` with `::before` state layers (hover 8%, press 12%), `.icon-btn`, `.m3-seg` (sliding thumb positioned by inline width and `translateX` from the segment count and index), `.m3-chip`, `.chip-static`, `.m3-field`, `.card`, `.stage` (pixel-grid background), `.m3-progress` (conic spinner), `.state-chip`, `.error-box`, `.rise-in` (staggered entrance).
-
-## Codebase tour
-
-- `index.html`, `examples.html`, `supported.html`: Vite MPA entries at the repo root, each with the pre-paint theme/palette boot script and the Roboto Flex link.
-- `vite.config.ts`: relative base (`./`) so the build works under any host path, `appType: "mpa"`, the three HTML inputs, the Solid 2 compiler plugin + tailwind.
-- `src/lib/icons.tsx`: the 11 app icons, rendered as Material Symbols ligatures (see Gotchas).
-- `src/lib/fonts.ts`: all font metadata and pure character logic (paths, support checks, preload lists). No DOM.
-- `src/lib/render.ts`: bitmap cache, lazy/idle loading, layout memo, layout computation and canvas drawing.
-- `src/lib/perf.ts`: sampling profiler (ring buffer, phase timings, percentile stats). Node-safe and clock-fakeable for tests.
-- `src/lib/palette.ts`: sampled sprite palettes for the color chips. `rankColors` frequency-ranks a sprite's opaque pixels (alpha threshold 127, capped at `max`), `darken` applies the M3 tone factor, `paletteFor` samples the font's "A" sprite once per `font|color` with in-flight dedupe and a `FALLBACK_PALETTE` fallback, `drawColorIcon` draws the pie swatch with the darkened rim. Browser-coupled; the pure parts are what `tests/palette.test.js` checks.
-- `src/pages/Generator.tsx`: the generator, M3 controls (Segmented, ColorChips, outlined field), state machine, perf chips and Details table; font/color/scale persist in localStorage as `msfb-settings`.
-- `src/pages/Examples.tsx`: gallery, data-driven from `FONT_SUPPORT` plus a per-font image size table; images lazy + async decode.
-- `src/pages/Supported.tsx`: support table, derived from `FONT_SUPPORT` (single source of truth with the generator) plus the hardcoded unsupported-symbols note.
-- `src/Page.tsx`: `AppBar` (mascot mark, actions slot), `Page` shell, `ThemeToggle` and `PaletteMenu` (both persisted), `ColorDot`, the `COLOR_HEX` sprite swatches, `PALETTES`/`SCHEME_TINTS` theme data and `capitalize`.
-- `src/index.css`: the M3 design system (see above).
-- `public/assets/`: fonts, example images, icons, `manifest.json`. Everything is referenced with relative `./assets/...` URLs.
-- `tests/`: the self-checks (layout, perf, sprites, palette), run by `npm test`.
-
-## Rules that matter for edits
-
-- Keep page components in `src/pages/` and entry files in `src/`. On this case-insensitive Windows filesystem `examples.tsx` and `Examples.tsx` would be the same file, so entry and component names must never collide; the `pages/` directory is the guard.
-- Never switch asset URLs to absolute paths. Relative `./assets/...` is what makes the same build work at a domain root and under a GitHub Pages subpath.
-- When touching layout metrics (25/50/15, limits), change them in `src/lib/fonts.ts` only and let `tests/layout.test.js` expectations follow.
-- The supported page must keep deriving from `FONT_SUPPORT`; do not copy the table into markup. Only the "No sprites in any font" note is hardcoded text and must be updated when support changes.
-- Keep sprite filenames and `SPECIAL_CHARACTERS` in sync with the `MetalSlugFontReborn` asset repo; the web app has no sprites of its own. `tests/sprites.test.js` enforces this in both directions: after adding or removing any sprite file, run it before trusting the supported lists. Accent glyph numbering is per font (Font 1 E-3 is é, Font 2 E-4 is é); `FONT_SYMBOL_OVERRIDES` exists for exactly that and must stay in sync with the files.
-- Color changes go through the `--m3-*` variables only; never hardcode a theme hex in JSX (the color dots in `COLOR_HEX` are sprite-color swatches, not theme colors).
-- If a render phase is added or renamed, update `perf.js` phase handling, the Details table columns and `tests/perf.test.js` together.
-- Icons are Material Symbols ligatures rendered from a self-hosted subset at `src/fonts/icons.woff2` (~1.7KB, 11 icons, `font-display: swap`). Regenerating is a two step fontTools job, the naive `pyftsubset --text=... --layout-features=liga` approach fails twice over: the font uses the `rlig` feature, not `liga`, and every icon name is built from shared component letters, so feature closure pulls in 1118 glyphs. Instead: prune the `rlig` LigatureSubst tables to the wanted ligature glyph names first, then run the subsetter with the explicit glyph list (21 component letters plus the 11 icon glyphs). The working script lives in this repo history as `.tmp/subset-icons.py`; the icon glyph names match the ligature strings exactly. Afterwards verify every icon renders as a single glyph, not as letters. The `material-icons` package stays as a devDependency only as the subset source; nothing imports its CSS. Roboto Flex is self-hosted too (`src/fonts/roboto-flex-latin.woff2`, the latin variable subset from Google Fonts, OFL licensed, `font-display: swap`); update it by downloading the current latin woff2 from the Google Fonts CSS response. Both fonts must never go back to third-party hosting: that re-creates the render-blocking chain and the preconnects the Lighthouse audit flagged. The app bar mascot ships sized for its 36px slot (84x108), do not replace it with the 189x243 original.
-- The Cloudflare deploy is a Worker with static assets, configured in `wrangler.jsonc` (the workers.dev URL is linked from the pages and README, keep `workers_dev` on), with caching and security rules in `public/_headers`. Hashed bundles and fonts are immutable; sprite and example filenames never change, so those are cached for 30 days, a tradeoff of their stable filenames. Cloudflare behavior questions get answered from the Cloudflare docs, not from memory.
-
-## Gotchas & quirks
-
-- Solid 2.0 RC is the requested platform (`solid-js@next`, `@solidjs/web@next`, `@solidjs/vite-plugin@next`): DOM APIs live in `@solidjs/web` (`render`, `Dynamic`, JSX types via `jsxImportSource`), `onMount` is `onSettled`, `classList` is gone in favor of the object/array `class` forms, and setters do not update reads until the microtask flush, so read-after-write code must use a local variable or call `flush()` (see `revalidate` in Generator). Authoritative reference: `node_modules/solid-js/CHEATSHEET.md` in the installed RC; read it before writing Solid code here.
-- Icons are Material Symbols ligatures through the `material-icons` package (`material-icons/iconfont/round.css` imported at the top of `src/index.css`); `src/lib/icons.tsx` aliases the 11 icons via its `makeIcon` factory. To add an icon, pick a Material Symbols name and add one alias line. The set has no brand glyphs, so the GitHub footer link is a plain text anchor and the mascot is the bundled webp.
-- Do not conditionally mount the preview canvas. `<Show>` around it desynced the ref during the loading overlay and the draw landed on a detached canvas (empty preview at default 300×150). Overlays over an always-mounted canvas are the pattern.
-- The floating field label needs its opaque background: it sits on the field border and would show the border line through the text otherwise.
-- The textarea is deliberately uncontrolled (no `value` binding): the binding only ever echoed user input back, and writing `.value` during IME composition can cancel CJK input. If you ever need to set the textarea programmatically, guard against `compositionstart`/`compositionend` first.
-- Error and empty transitions must clear `warning`, `imgMeta`, `sample` and `errorKind` along with the status; the chips row lives outside the stage overlay, so stale dimensions and profiler numbers would survive an error otherwise. The chips row is rendered only while `imgMeta` is non-empty, and the meta chip has no placeholder value.
-- Failed sprite loads (after timeout and retry) are a recoverable state, not a dead end: the error box grows a Try again button (only for the `failed` kind) that calls `resetFailures()` and regenerates. Error kinds exist because unsupported/too-large errors are not retryable.
-- The font/color/scale handlers all funnel through the `revalidate` helper (clear debounce, invalidate genId, apply, generate) so no input path can skip the invalidation.
-- `preloadIdle` chains are cancelled by target change (`idleTarget`) and deduped per `font|color` (`activeChains`), so switching fonts quickly never stacks background downloads. Keep that invariant if you touch it.
-- Theme and palette are applied pre-paint by an inline script in each HTML head (`msfb-theme` and `msfb-palette` in localStorage, falling back to `prefers-color-scheme` and amber); keep the script inline, after the theme-color meta, and before any painted content so there is no flash of the wrong scheme.
-- The IAB/Playwright `fill("")` and plain key presses may not edit a textarea in the in-app browser (default text-edit actions don't run). When testing text behavior in automation, set `value` and dispatch an `input` event instead; the app itself handles empty input correctly.
-- Font asset directories are `ms-<color>` with colors `blue`, `orange`, `gold`, `yellow`; a color not in `FONT_SUPPORT[font].colors` has no directory, which is why the color chips are re-derived on font switch.
-- TypeScript 7 (the native Go-based compiler) runs `typecheck` via the same `tsc` bin. Unlike TS 5 it errors on side-effect imports of files without declarations, which is what `src/css.d.ts` and its `declare module "*.css"` exist for; extend that file if another non-TS import type is added.
-- ponytail: text input has no length cap; oversized outputs are caught by the 16384px hard limit and reported as an error, which covers the pathological cases without buffering logic. If abusive giant texts ever become a real problem, add a max character count at the textarea.
-
-## Where to look things up
-
-`docs-for-agents/` (gitignored, local reference material) holds an MDN snapshot under `mdn-main/`, a material-web repo snapshot under `m3_material_docs/`, solid docs under `solid-docs/`, the vite repo under `vite-main/` and Neutralino docs and samples for the sibling desktop edition under `neutralino*/`. For dependency APIs, read the package in `node_modules` directly.
-
-## RTK
-
-RTK (`rtk`) is installed and available on PATH. Use RTK commands whenever an equivalent exists to reduce unnecessary CLI output and context usage.
-
-### Rules
-
-- Prefer `rtk` over the normal command when RTK provides an equivalent.
-- Use the normal command when RTK does not provide an appropriate equivalent.
-- Do not use RTK if the full/raw output is required for the task.
-- Do not run both RTK and the normal command just to compare their output.
-- RTK only filters/condenses output; it does not change the underlying command's intended behavior.
-- If RTK hides information needed to continue, use `rtk recall` when applicable or run the normal command.
-
-### Common replacements
-
-- `ls` → `rtk ls`
-- `tree` → `rtk tree`
-- `cat` / file reading → `rtk read`
-- `find` → `rtk find`
-- `grep` → `rtk grep`
-- `rg` → `rtk rg`
-- `git ...` → `rtk git ...`
-- `gh ...` → `rtk gh ...`
-- `curl ...` → `rtk curl ...`
-- `wget ...` → `rtk wget ...`
-
-### Useful specialized commands
-
-- Use `rtk test` when only test failures/results are needed.
-- Use `rtk err` when only errors and warnings are relevant.
-- Use `rtk diff` for a compact diff when the full diff is unnecessary.
-- Use `rtk json` when inspecting JSON output.
-- Use `rtk summary` or `rtk smart` when a concise command summary is useful.
-
-Do not blindly replace every command with RTK; if RTK's filtering could hide information needed to continue, run the normal command.
-
-### On this machine
-
-- ZCode's shell is **Git Bash** (win32), not PowerShell: invoke `rtk` normally, never `.\rtk.exe`.
-- Installed at `C:\Program Files\rtk-x86_64-pc-windows-msvc\rtk.exe` and on the persisted user PATH.
-- Shell env vars don't persist between Bash calls, so `export PATH=...` won't stick. If plain `rtk` isn't found (e.g. ZCode was launched before the PATH entry was added: inherited env is stale until ZCode restarts), call it by absolute path `"/c/Program Files/rtk-x86_64-pc-windows-msvc/rtk.exe"` or fall back to the normal command.
+- Dependency APIs: read the package in `node_modules`.
+- Global `AGENTS.md` lists the offline documentation mirrors (MDN, TypeScript, OpenCode, Cloudflare runner images) and the `uv`/RTK rules.
