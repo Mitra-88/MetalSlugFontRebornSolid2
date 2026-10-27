@@ -29,11 +29,10 @@
     "@solidjs/vite-plugin": "^3.0.0-next.51",
     "@tailwindcss/vite": "^4.3.3",
     "@types/node": "^26.6.5",
-    "material-icons": "^1.13.14",
     "tailwindcss": "^4.3.3",
     "typescript": "^7.0.2",
     "vite": "^8.3.5",
-    "wrangler": "^4.152.0"
+    "wrangler": "^4.153.0"
   },
   "engines": {
     "bun": ">=1.4.4"
