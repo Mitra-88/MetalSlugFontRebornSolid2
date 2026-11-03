@@ -187,7 +187,7 @@ export function AppBar(props: { back?: boolean; actions?: JSX.Element }): JSX.El
     return (
         <header class="app-bar">
             <div class="mx-auto flex h-16 w-full max-w-6xl items-center gap-3 px-4 sm:px-6">
-                <Show when={props.back} fallback={<img src="./assets/icons/Raubtier.webp" alt="" class="size-9 select-none object-contain" />}>
+                <Show when={props.back} fallback={<img src="/assets/icons/Raubtier.webp" alt="" class="size-9 select-none object-contain" />}>
                     <a href="./index.html" class="icon-btn -ml-2" aria-label="Back to generator">
                         <ArrowLeft size={20} />
                     </a>

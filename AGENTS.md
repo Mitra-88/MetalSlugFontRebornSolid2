@@ -59,6 +59,7 @@ Invariants:
 
 - Entry files stay in `src/`, page components in `src/pages/`. On this case-insensitive filesystem `examples.tsx` and `Examples.tsx` collide, so entry and page names must never match; the `pages/` split is the guard.
 - Asset URLs stay relative (`./assets/...`): that is what makes one build work at a domain root and under a subpath.
+- A literal `src`/`srcset`/`poster` on `<img>`, `<source>` or `<video>` in JSX is rewritten to an asset import by the vite plugin, so a relative path there must resolve inside `src/`. A file in `public/` is written `/assets/...`, which the plugin turns back into a chunk-relative import.
 - `Supported.tsx` derives its table from `FONT_SUPPORT`. Only the "No sprites in any font" note is hardcoded and must be updated when support changes.
 - Sprites live in `public/assets/fonts/font-<n>/ms-<color>/{letters,numbers,symbols}`; colors are blue, orange, gold, yellow and vary per font. `tests/sprites.test.js` compares `FONT_SUPPORT` against the files in both directions, so run it after any asset change. Accent numbering is per font (Font 1 E-3 is é, Font 2 E-4), which is why `FONT_SYMBOL_OVERRIDES` exists.
 - Adding or renaming a perf phase means updating `perf.ts`, the Details table columns and `tests/perf.test.js` together.
