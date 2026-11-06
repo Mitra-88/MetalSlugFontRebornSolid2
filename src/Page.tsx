@@ -58,7 +58,14 @@ export function ColorDot(props: { font: FontId; color: ColorName; size?: number 
     createEffect(
         () => [props.font, props.color] as const,
         ([font, color]) => {
-            paletteFor(font, color).then((palette) => drawColorIcon(canvas, palette, 2));
+            let cancelled = false;
+            paletteFor(font, color).then((palette) => {
+                if (cancelled) return;
+                drawColorIcon(canvas, palette, 2);
+            });
+            return () => {
+                cancelled = true;
+            };
         },
     );
 

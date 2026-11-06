@@ -36,6 +36,8 @@ export function darken(rgb: RGB, factor: number): RGB {
 const paletteCache = new Map<string, RGB[]>();
 const pendingPalettes = new Map<string, Promise<RGB[]>>();
 
+const SAMPLE_CHARS = ["A", "M", "W"] as const;
+
 export function paletteFor(font: FontId, color: ColorName, max = 6): Promise<RGB[]> {
     const key = `${font}|${color}`;
     const cached = paletteCache.get(key);
@@ -45,17 +47,27 @@ export function paletteFor(font: FontId, color: ColorName, max = 6): Promise<RGB
 
     const promise = (async (): Promise<RGB[]> => {
         try {
-            const path = getCharPath(font, color, "A");
-            if (!path) return FALLBACK_PALETTE;
-            const sprite = await loadImage(path);
-            if (!sprite) return FALLBACK_PALETTE;
-            const canvas = document.createElement("canvas");
-            canvas.width = sprite.w;
-            canvas.height = sprite.h;
-            const ctx = canvas.getContext("2d", { willReadFrequently: true });
-            if (!ctx) return FALLBACK_PALETTE;
-            ctx.drawImage(sprite.drawable, 0, 0);
-            const palette = rankColors(ctx.getImageData(0, 0, sprite.w, sprite.h).data, max);
+            const sprites = await Promise.all(
+                SAMPLE_CHARS.map(async (ch) => {
+                    const path = getCharPath(font, color, ch);
+                    if (!path) return null;
+                    return loadImage(path);
+                })
+            );
+            const allData: number[] = [];
+            for (const sprite of sprites) {
+                if (!sprite || sprite.w <= 0 || sprite.h <= 0) continue;
+                const canvas = document.createElement("canvas");
+                canvas.width = sprite.w;
+                canvas.height = sprite.h;
+                const ctx = canvas.getContext("2d", { willReadFrequently: true });
+                if (!ctx) continue;
+                ctx.drawImage(sprite.drawable, 0, 0);
+                const data = ctx.getImageData(0, 0, sprite.w, sprite.h).data;
+                for (let i = 0; i < data.length; i++) allData.push(data[i]!);
+            }
+            if (allData.length === 0) return FALLBACK_PALETTE;
+            const palette = rankColors(allData, max);
             const result = palette.length > 0 ? palette : FALLBACK_PALETTE;
             paletteCache.set(key, result);
             return result;
