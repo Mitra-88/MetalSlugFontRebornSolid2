@@ -13,6 +13,7 @@ export default defineConfig({
         index: resolve(import.meta.dirname, "index.html"),
         examples: resolve(import.meta.dirname, "examples.html"),
         supported: resolve(import.meta.dirname, "supported.html"),
+        license: resolve(import.meta.dirname, "license.html"),
       },
     },
   },

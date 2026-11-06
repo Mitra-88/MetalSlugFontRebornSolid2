@@ -827,15 +827,16 @@ body {
 }
 
 .m3-field textarea::-webkit-resizer {
-    background: linear-gradient(
-        135deg,
-        transparent 0 6px,
-        var(--m3-outline-variant) 6px 8px,
-        transparent 8px 12px,
-        var(--m3-outline-variant) 12px 14px,
-        transparent 14px
-    );
+    appearance: none;
+    -webkit-appearance: none;
+    width: 28px;
+    height: 28px;
+    background:
+        linear-gradient(135deg, transparent 14px, var(--m3-outline-variant) 14px, var(--m3-outline-variant) 16px, transparent 16px),
+        linear-gradient(135deg, transparent 20px, var(--m3-outline-variant) 20px, var(--m3-outline-variant) 22px, transparent 22px);
+    background-repeat: no-repeat;
     border-bottom-right-radius: 14px;
+    cursor: nwse-resize;
 }
 
 .m3-field textarea:hover {

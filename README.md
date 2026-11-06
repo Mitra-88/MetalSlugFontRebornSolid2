@@ -17,23 +17,15 @@ Desktop shell: the Neutralino.js version for Windows, macOS, and Linux lives in 
 
 ## Structure
 
-```
-index.html, examples.html, supported.html   entry pages
-public/assets                               fonts, examples, icons
-src/lib                                     core logic
-  fonts.ts      FONT_SUPPORT, path building, layout constants
-  render.ts     sprite cache, idle preload, layout memo, canvas draw
-  perf.ts       profiler ring buffer and stats
-  palette.ts    color pie sampling for the dots
-  icons.tsx     Material Symbols aliases
-src/pages
-  Generator.tsx  controls, preview, timing panel, download
-  Examples.tsx   font gallery
-  Supported.tsx  character support reference
-src/Page.tsx    app bar, page shell, theme and palette menus, bottom nav
-src/index.css   Material 3 tokens
-tests/          five TypeScript self-checks run with Bun
-```
+| What | Where | Notes |
+| --- | --- | --- |
+| Entry pages | `index.html`, `examples.html`, `supported.html`, `license.html` | Four MPA entries, built to `dist/` |
+| Core logic | `src/lib/` | Font data, rendering, profiler, palettes, icons |
+| Pages | `src/pages/` | Generator, Examples, Supported, License |
+| Shell | `src/Page.tsx` | App bar, footer with help, info, and commit icons, theme and palette menus, bottom nav |
+| Styles | `src/index.css` | Material 3 tokens via Tailwind v4 |
+| Assets | `public/assets/` | Fonts, examples, icons, `license.txt` |
+| Tests | `tests/` | Five TypeScript self-checks run with Bun |
 
 ## Setup
 
@@ -78,4 +70,4 @@ The gate is `typecheck` plus `test` plus `build`. Run them in that order before 
 
 ## License
 
-GNU General Public License v3.0. See LICENSE.
+GNU General Public License v3.0. See [LICENSE](LICENSE) and the in-app [License](license.html) page.

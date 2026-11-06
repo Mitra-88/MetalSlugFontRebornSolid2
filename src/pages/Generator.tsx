@@ -363,9 +363,10 @@ export default function Generator(): JSX.Element {
                 </>
             }
             links={[
-                { href: "./supported.html", label: "Supported characters" },
-                { href: "./examples.html", label: "Browse examples" },
-                { href: "https://github.com/Mitra-88/MetalSlugFontRebornSolid2", label: "GitHub" },
+                { href: "./supported.html", label: "Supported characters", icon: "help" },
+                { href: "./examples.html", label: "Browse examples", icon: "info" },
+                { href: "https://github.com/Mitra-88/MetalSlugFontRebornSolid2", label: "GitHub", icon: "commit" },
+                { href: "./license.html", label: "License", icon: "info" },
             ]}
         >
             <div class="grid grid-cols-1 items-start gap-4 sm:gap-6 md:grid-cols-[minmax(280px,360px)_1fr] lg:grid-cols-[400px_1fr]">

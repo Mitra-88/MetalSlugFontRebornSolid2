@@ -1,6 +1,6 @@
 import { For, Show, createEffect, createSignal, onSettled } from "solid-js";
 import type { JSX } from "@solidjs/web";
-import { ArrowLeft, Check, Moon, Palette, Sun } from "./lib/icons.tsx";
+import { ArrowLeft, Check, Commit, Help, Info, Moon, Palette, Sun } from "./lib/icons.tsx";
 import type { ColorName, FontId } from "./lib/fonts.ts";
 import { drawColorIcon, paletteFor } from "./lib/palette.ts";
 
@@ -237,6 +237,17 @@ export function AppBar(props: { back?: boolean | undefined; actions?: JSX.Elemen
 export interface FooterLink {
     href: string;
     label: string;
+    icon?: "help" | "info" | "commit" | undefined;
+}
+
+function FooterIcon(props: { icon: "help" | "info" | "commit" }): JSX.Element {
+    return (
+        <span class="inline-flex align-middle">
+            {props.icon === "help" && <Help size={16} />}
+            {props.icon === "info" && <Info size={16} />}
+            {props.icon === "commit" && <Commit size={16} />}
+        </span>
+    );
 }
 
 export function Page(props: { back?: boolean | undefined; actions?: JSX.Element | undefined; links?: FooterLink[] | undefined; children?: JSX.Element | undefined }): JSX.Element {
@@ -253,7 +264,10 @@ export function Page(props: { back?: boolean | undefined; actions?: JSX.Element 
                                     <Show when={i() > 0}>
                                         <span class="px-1 opacity-50">·</span>
                                     </Show>
-                                    <a href={link.href} class="footer-link">
+                                    <a href={link.href} class="footer-link inline-flex items-center gap-1.5">
+                                        <Show when={link.icon}>
+                                            <FooterIcon icon={link.icon!} />
+                                        </Show>
                                         {link.label}
                                     </a>
                                 </>

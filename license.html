@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>MetalSlugFontReborn License</title>
+    <meta name="theme-color" content="#17120c">
+    <script>
+        let storedTheme = null;
+        let storedPalette = null;
+        try {
+            storedTheme = localStorage.getItem("msfb-theme");
+            storedPalette = localStorage.getItem("msfb-palette");
+        } catch {}
+        const theme = storedTheme ?? (matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark");
+        document.documentElement.dataset.theme = theme;
+        const palette = storedPalette ?? "amber";
+        if (palette !== "amber") document.documentElement.dataset.palette = palette;
+        const tints = { amber: ["#fff8f2", "#17120c"], verdant: ["#f8faf0", "#11140c"], azure: ["#f9f9ff", "#111318"], violet: ["#fef7ff", "#141218"], rose: ["#fff2f3", "#170c0d"], teal: ["#f2ffff", "#0c1717"] };
+        document.querySelector('meta[name="theme-color"]').content = (tints[palette] ?? tints.amber)[theme === "light" ? 0 : 1];
+    </script>
+    <meta name="description" content="License for MetalSlugFontReborn.">
+    <link rel="icon" href="./assets/icons/favicon.ico" type="image/x-icon">
+    <link rel="manifest" href="./manifest.json">
+    <script type="module" src="/src/license.tsx"></script>
+</head>
+<body>
+    <div id="root"></div>
+</body>
+</html>
