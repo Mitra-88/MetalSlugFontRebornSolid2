@@ -40,15 +40,20 @@ function applyThemeColorMeta(theme: string): void {
 function withThemeTransition(apply: () => void): void {
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const doc = document as Document & {
-        startViewTransition?: (callback: () => void) => { ready: Promise<unknown>; finished: Promise<unknown> };
+        startViewTransition?: (callback: () => void) => { ready: Promise<unknown>; finished: Promise<unknown>; updateCallbackDone: Promise<unknown> };
     };
-    if (reduced || typeof doc.startViewTransition !== "function") {
+    if (reduced || typeof doc.startViewTransition !== "function" || document.visibilityState !== "visible") {
         apply();
         return;
     }
-    const transition = doc.startViewTransition(apply);
-    transition.ready.catch(() => {});
-    transition.finished.catch(() => {});
+    try {
+        const transition = doc.startViewTransition(apply);
+        transition.ready.catch(() => {});
+        transition.finished.catch(() => {});
+        transition.updateCallbackDone.catch(() => {});
+    } catch {
+        apply();
+    }
 }
 
 export function ColorDot(props: { font: FontId; color: ColorName; size?: number }): JSX.Element {
@@ -264,7 +269,7 @@ export function Page(props: { back?: boolean | undefined; actions?: JSX.Element 
                                     <Show when={i() > 0}>
                                         <span class="px-1 opacity-50">·</span>
                                     </Show>
-                                    <a href={link.href} class="footer-link inline-flex items-center gap-1.5">
+                                    <a href={link.href} class="footer-link inline-flex items-center gap-1.5" target={link.href.startsWith("https://") ? "_blank" : undefined} rel={link.href.startsWith("https://") ? "noopener noreferrer" : undefined}>
                                         <Show when={link.icon}>
                                             <FooterIcon icon={link.icon!} />
                                         </Show>

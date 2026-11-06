@@ -1,6 +1,6 @@
 import { For, Show } from "solid-js";
 import type { JSX } from "@solidjs/web";
-import { ColorDot, Page, ThemeToggle, capitalize } from "../Page.tsx";
+import { ColorDot, Page, ThemeToggle, capitalize, COLOR_HEX } from "../Page.tsx";
 import { FONT_SUPPORT, UNUSED_SYMBOLS } from "../lib/fonts.ts";
 import type { ColorName, FontId } from "../lib/fonts.ts";
 
@@ -48,7 +48,11 @@ export default function Supported(): JSX.Element {
                         <section class="rise-in card p-4 sm:p-5" style={{ "animation-delay": `${i() * 60}ms` }}>
                             <div class="flex items-center justify-between gap-3">
                                 <h2 class="text-title-m">Font {n}</h2>
-                                <span class="chip-static shrink-0">
+                                <span
+                                    class="chip-static chip-gradient shrink-0"
+                                    style={{ "--chip-gradient": `linear-gradient(100deg, ${FONT_SUPPORT[n].colors.map((c) => COLOR_HEX[c]).join(", ")})` }}
+                                    title={FONT_SUPPORT[n].colors.map((c) => capitalize(c)).join(", ")}
+                                >
                                     {FONT_SUPPORT[n].colors.length} {FONT_SUPPORT[n].colors.length === 1 ? "color" : "colors"}
                                 </span>
                             </div>
