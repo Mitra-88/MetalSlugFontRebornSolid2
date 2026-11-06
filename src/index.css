@@ -808,17 +808,29 @@ body {
 }
 
 .chip-gradient {
-    background: linear-gradient(100deg, var(--chip-gradient, transparent), var(--chip-gradient, transparent));
+    background-image: var(--chip-gradient, none);
+    background-size: 200% 100%;
+    background-repeat: no-repeat;
+    background-position: 0% 50%;
     background-clip: text;
     -webkit-background-clip: text;
     color: transparent;
     -webkit-text-fill-color: transparent;
-    animation: chip-gradient-slide 4s ease-in-out infinite alternate;
+    animation: chip-gradient-slide 3s ease-in-out infinite alternate;
 }
 
 @keyframes chip-gradient-slide {
     from { background-position: 0% 50%; }
     to { background-position: 100% 50%; }
+}
+
+@supports not ((background-clip: text) or (-webkit-background-clip: text)) {
+    .chip-gradient {
+        background-image: none;
+        color: var(--m3-on-surface-variant);
+        -webkit-text-fill-color: var(--m3-on-surface-variant);
+        animation: none;
+    }
 }
 
 @media (prefers-reduced-motion: reduce) {

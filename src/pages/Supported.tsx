@@ -49,11 +49,15 @@ export default function Supported(): JSX.Element {
                             <div class="flex items-center justify-between gap-3">
                                 <h2 class="text-title-m">Font {n}</h2>
                                 <span
-                                    class="chip-static chip-gradient shrink-0"
-                                    style={{ "--chip-gradient": `linear-gradient(100deg, ${FONT_SUPPORT[n].colors.map((c) => COLOR_HEX[c]).join(", ")}, ${FONT_SUPPORT[n].colors.map((c) => COLOR_HEX[c]).join(", ")})` }}
+                                    class="chip-static shrink-0"
                                     title={FONT_SUPPORT[n].colors.map((c) => capitalize(c)).join(", ")}
                                 >
-                                    {FONT_SUPPORT[n].colors.length} {FONT_SUPPORT[n].colors.length === 1 ? "color" : "colors"}
+                                    <span
+                                        class="chip-gradient"
+                                        style={{ "--chip-gradient": `linear-gradient(100deg, ${FONT_SUPPORT[n].colors.map((c) => COLOR_HEX[c]).join(", ")}, ${FONT_SUPPORT[n].colors.map((c) => COLOR_HEX[c]).join(", ")})` }}
+                                    >
+                                        {FONT_SUPPORT[n].colors.length} {FONT_SUPPORT[n].colors.length === 1 ? "color" : "colors"}
+                                    </span>
                                 </span>
                             </div>
                             <ul class="mt-3 flex flex-col gap-2">
