@@ -1,102 +1,81 @@
 # MetalSlugFontRebornSolid2
 
-Web app version of [MetalSlugFontReborn](https://github.com/Mitra-88/MetalSlugFontReborn): a standalone client-side reimplementation running on Solid 2 (TypeScript), Vite and Tailwind CSS, styled after Material Design 3
+Metal Slug text to PNG renderer in Solid 2 and Vite. Type text, pick one of five Metal Slug fonts, a color, and a scale, then download a PNG. Everything runs in the browser, no server.
 
-## 🚀 Demo
+Live site: https://metalslugfontrebornsolid2.mitra88dev.workers.dev
 
-Visit the live instance: [https://metalslugfontrebornsolid2.mitra88dev.workers.dev](https://metalslugfontrebornsolid2.mitra88dev.workers.dev)
+## What it does
 
-## ✨ Highlights
+- Renders typed text live on a canvas from per-character sprite PNGs, then downloads the result as a PNG. Characters the selected font cannot draw are skipped and listed, the rest still renders.
+- Solid 2 with TypeScript, Vite 8, Tailwind CSS 4, and a hand-rolled Material 3 system with six palettes and light and dark themes.
+- Sprite loading has timeouts and one automatic retry. Load failures offer a retry button and do not block the rest of the page.
+- A sampling profiler times each render in three phases, load, layout, and draw, with p50 and p95 stats. On desktop, the Timing details panel also shows a short bar per run and a table of the last five runs. On phones and tablets it stays hidden.
+- Character support lists are machine-verified against the sprite files on every test run. The palette dot for each color is sampled once per color from the first font that has it, the same rule the Python app uses, so a color looks the same everywhere.
+- Adaptive layout for desktop and mobile, with a bottom navigation bar under `sm` and safe-area padding. No router, no server.
 
-- Live canvas rendering: type text, pick a font variant, color and scale, download the PNG. Characters a font cannot draw are skipped automatically with a clear notice, and the rest still renders.
-- Reliable by design: sprite loads have timeouts and automatic retries, failures offer a one-click retry, and the character support lists are machine-verified against the sprite files on every test run.
-- Material 3 design system hand-rolled with Tailwind tokens: six seed palettes (Amber Forge, Verdant, Azure, Violet, Rose, Teal) each with full light and dark schemes, M3 color roles, type scale, shape and expressive spring motion.
-- Fast by construction: sprites decode once into GPU bitmaps via `createImageBitmap`, layouts are memoized per text, the rest of the font warms up during idle time, and a built-in sampling profiler shows render phase timings (load, layout, draw) with p50/p95 stats right in the preview panel.
-- Adaptive layout for desktop and mobile, no router, no server.
+Desktop shell: the Neutralino.js version for Windows, macOS, and Linux lives in [MetalSlugFontRebornDesktop](https://github.com/Mitra-88/MetalSlugFontRebornDesktop).
 
-## 🖥️ Desktop edition
-
-The same app wrapped in a [Neutralino.js](https://neutralino.js.org) desktop shell for Windows, macOS and Linux lives in the sibling repository: [MetalSlugFontRebornDesktop](https://github.com/Mitra-88/MetalSlugFontRebornDesktop).
-
-## 📁 Project Structure
+## Structure
 
 ```
-├── index.html            # Main generator page
-├── examples.html         # Font examples gallery
-├── supported.html        # Character support reference
-├── public/
-│   └── assets/
-│       ├── examples/     # Example images
-│       ├── fonts/        # Character sprite assets (5 fonts, various colors)
-│       └── icons/        # App icons and favicon
-├── src/
-│   ├── lib/
-│   │   ├── fonts.ts      # Font metadata, character mapping, path builder
-│   │   ├── render.ts     # Bitmap cache, idle preloading, layout memo, canvas drawing
-│   │   ├── perf.ts       # Sampling profiler for the render pipeline
-│   │   ├── icons.tsx     # Locally defined Material Symbols icon aliases
-│   │   └── palette.ts    # Sampled sprite palettes for the color chips
-│   ├── pages/
-│   │   ├── Generator.tsx # Controls, live preview, profiler panel, download
-│   │   ├── Examples.tsx
-│   │   └── Supported.tsx
-│   ├── Page.tsx          # App bar, page shell, theme toggle
-│   ├── index.css         # Material 3 design system (Tailwind v4 tokens)
-│   └── *.tsx             # Entry points per page
-└── tests/
-    ├── layout.test.js    # Self-check for layout and character logic
-    ├── perf.test.js      # Profiler math + layout benchmark
-    ├── sprites.test.js   # Verifies support lists against sprite files
-    └── palette.test.js   # Verifies palette sampling math
+index.html, examples.html, supported.html   entry pages
+public/assets                               fonts, examples, icons
+src/lib                                     core logic
+  fonts.ts      FONT_SUPPORT, path building, layout constants
+  render.ts     sprite cache, idle preload, layout memo, canvas draw
+  perf.ts       profiler ring buffer and stats
+  palette.ts    color pie sampling for the dots
+  icons.tsx     Material Symbols aliases
+src/pages
+  Generator.tsx  controls, preview, timing panel, download
+  Examples.tsx   font gallery
+  Supported.tsx  character support reference
+src/Page.tsx    app bar, page shell, theme and palette menus, bottom nav
+src/index.css   Material 3 tokens
+tests/          five TypeScript self-checks run with Bun
 ```
 
-## 🔧 Installation
+## Setup
 
-### Prerequisites
-
-- Bun 1.4.4 or newer
-
-### Setup
+Requires Bun 1.4.4 or newer.
 
 ```
-git clone https://github.com/Mitra-88/MetalSlugFontRebornSolid2.git
-cd MetalSlugFontRebornSolid2
 bun install
-```
-
-### Develop
-
-```
 bun run dev
 ```
 
-### Build and preview
+Runs on http://localhost:5173.
+
+## Build and preview
 
 ```
 bun run build
 bun run preview
 ```
 
-The build outputs static HTML/JS/CSS into `dist/` with relative paths, ready to drop onto GitHub Pages, Netlify, Cloudflare Workers or any static host.
+The build writes static files to `dist/` with relative paths. You can drop `dist/` on GitHub Pages, Netlify, Cloudflare Workers, or any static host.
 
-### Deploy to Cloudflare
-
-The site runs as a Worker with static assets. Connect the repository in the Cloudflare dashboard (Workers Builds) and the pipeline is:
+To test on a phone on the same Wi-Fi:
 
 ```
-bun run build
-bunx wrangler deploy
+bun run preview --host [IP_ADDRESS] --port 5174
 ```
 
-Deployment settings live in `wrangler.jsonc`, caching and security headers in `public/_headers` (copied into `dist/` by the build). Hashed bundles and fonts are cached forever, sprites and example images keep their stable filenames and are cached for 30 days. The build image preinstalls Bun (1.2.15 by default), so set `BUN_VERSION=1.4.4` in the Worker's build settings. If dependency install does not pick up `bun.lock`, set `SKIP_DEPENDENCY_INSTALL=1` and make the build command `bun install && bun run build`.
+Find your PC address with `ipconfig`, then open `http://[IP_ADDRESS]:5174/` on the phone.
 
-### Type check and self-checks
+## Deploy to Cloudflare
+
+The site runs as a Worker with static assets. Connect the repo in Workers Builds and run `bun run build` then `bunx wrangler deploy`. Settings live in `wrangler.jsonc`. Caching and security headers live in `public/_headers`. Hashed bundles and fonts are cached forever, sprites and example images keep their stable names and are cached for 30 days. Set `BUN_VERSION=1.4.4` in build settings.
+
+## Checks
 
 ```
 bun run typecheck
 bun run test
 ```
 
-## 📄 License
+The gate is `typecheck` plus `test` plus `build`. Run them in that order before committing.
 
-This project is licensed under the [GNU General Public License v3.0](LICENSE).
+## License
+
+GNU General Public License v3.0. See LICENSE.
