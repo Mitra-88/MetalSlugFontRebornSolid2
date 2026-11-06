@@ -1,5 +1,6 @@
 import { For, Show, createMemo, createSignal, flush, onSettled } from "solid-js";
 import type { JSX } from "@solidjs/web";
+import device from "current-device";
 import { Activity, Check, ChevronDown, Download, Image, Info, TriangleAlert } from "../lib/icons.tsx";
 import { ColorDot, Page, PaletteMenu, ThemeToggle } from "../Page.tsx";
 import { FONT_SUPPORT, HARD_LIMIT, collectUnsupported } from "../lib/fonts.ts";
@@ -159,6 +160,7 @@ export default function Generator(): JSX.Element {
         }
     }
     const [showPerf, setShowPerf] = createSignal(loadPerfVisible());
+    const isDesktop = (): boolean => device.desktop();
     const [loadingCount, setLoadingCount] = createSignal(0);
     const [skipped, setSkipped] = createSignal<string[]>([]);
 
@@ -508,40 +510,68 @@ export default function Generator(): JSX.Element {
                                 </span>
                                 <span class="chip-static mono">{sample()!.sprites} {sample()!.sprites === 1 ? "sprite" : "sprites"}</span>
                                 <span class="chip-static mono">{cacheHitPct()}% cached</span>
-                                <button type="button" class="m3-chip" onClick={togglePerf} aria-expanded={showPerf() ? "true" : "false"}>
-                                    Timing details
-                                    <ChevronDown size={14} class={["transition-transform duration-300", { "rotate-180": showPerf() }]} />
-                                </button>
+                                <Show when={isDesktop()}>
+                                    <button type="button" class="m3-chip" onClick={togglePerf} aria-expanded={showPerf() ? "true" : "false"}>
+                                        Timing details
+                                        <ChevronDown size={14} class={["transition-transform duration-300", { "rotate-180": showPerf() }]} />
+                                    </button>
+                                </Show>
                             </Show>
                         </div>
                     </Show>
 
-                    <Show when={showPerf() && perfStats()}>
-                        <div class="rise-in mt-3 flex flex-col gap-2 sm:hidden">
-                            <For each={recentSamples()}>
-                                {(s, i) => (
-                                    <div class="mono flex items-center justify-between gap-2 rounded-xl border border-outline-variant px-3 py-2 text-body-s text-on-surface-variant">
-                                        <span class="font-semibold text-on-surface">run {Math.max(1, (perfStats()?.count ?? 0) - recentSamples().length + i() + 1)}</span>
-                                        <span class="flex flex-wrap gap-x-2 gap-y-0.5 text-right">
-                                            <span>load {(s.phases.load ?? 0).toFixed(1)}</span>
-                                            <span>layout {(s.phases.layout ?? 0).toFixed(2)}</span>
-                                            <span>draw {(s.phases.draw ?? 0).toFixed(2)}</span>
-                                            <span class="text-on-surface">{s.total.toFixed(2)} ms</span>
-                                        </span>
-                                    </div>
-                                )}
-                            </For>
-                            <div class="mono flex items-center justify-between gap-2 rounded-xl bg-surface-high px-3 py-2 text-body-s text-on-surface">
-                                <span class="font-semibold">p95</span>
-                                <span class="flex flex-wrap gap-x-2 gap-y-0.5 text-right">
-                                    <span>load {(perfStats()!.phases.load?.p95 ?? 0).toFixed(1)}</span>
-                                    <span>layout {(perfStats()!.phases.layout?.p95 ?? 0).toFixed(2)}</span>
-                                    <span>draw {(perfStats()!.phases.draw?.p95 ?? 0).toFixed(2)}</span>
-                                    <span>{perfStats()!.p95.toFixed(2)} ms</span>
-                                </span>
+                    <Show when={showPerf() && perfStats() && isDesktop()}>
+                        <div class="rise-in mt-3 overflow-hidden rounded-2xl border border-outline-variant bg-surface-container-low">
+                            <div class="grid grid-cols-2 gap-0 border-b border-outline-variant sm:grid-cols-4">
+                                <div class="border-r border-outline-variant p-3">
+                                    <p class="text-label-s text-on-surface-variant">Last render</p>
+                                    <p class="mono mt-1 text-body-m font-semibold text-on-surface">{sample()!.total.toFixed(2)} ms</p>
+                                </div>
+                                <div class="p-3 sm:border-r sm:border-outline-variant">
+                                    <p class="text-label-s text-on-surface-variant">p95</p>
+                                    <p class="mono mt-1 text-body-m font-semibold text-on-surface">{perfStats()!.p95.toFixed(2)} ms</p>
+                                </div>
+                                <div class="border-r border-t border-outline-variant p-3 sm:border-t-0">
+                                    <p class="text-label-s text-on-surface-variant">Sprites</p>
+                                    <p class="mono mt-1 text-body-m font-semibold text-on-surface">{sample()!.sprites ?? 0} ({cacheHitPct()}% cached)</p>
+                                </div>
+                                <div class="border-t border-outline-variant p-3 sm:border-t-0">
+                                    <p class="text-label-s text-on-surface-variant">Runs measured</p>
+                                    <p class="mono mt-1 text-body-m font-semibold text-on-surface">{perfStats()!.count}</p>
+                                </div>
+                            </div>
+                            <div class="flex flex-col gap-2 p-3">
+                                <For each={recentSamples()}>
+                                    {(s, i) => {
+                                        const maxTotal = Math.max(0.01, ...recentSamples().map((r) => r.total));
+                                        const totalWidth = Math.min(100, (s.total / maxTotal) * 100);
+                                        const loadWidth = totalWidth > 0 ? ((s.phases.load ?? 0) / Math.max(0.01, s.total)) * totalWidth : 0;
+                                        const layoutWidth = totalWidth > 0 ? ((s.phases.layout ?? 0) / Math.max(0.01, s.total)) * totalWidth : 0;
+                                        const drawWidth = Math.max(0, totalWidth - loadWidth - layoutWidth);
+                                        return (
+                                            <div class="flex items-center gap-3">
+                                                <span class="mono w-8 shrink-0 text-body-s text-on-surface-variant">
+                                                    {Math.max(1, (perfStats()?.count ?? 0) - recentSamples().length + i() + 1)}
+                                                </span>
+                                                <div class="flex h-3 flex-1 overflow-hidden rounded-full bg-surface-container-high">
+                                                    <div class="h-full bg-primary" style={{ width: `${loadWidth.toFixed(1)}%` }} />
+                                                    <div class="h-full bg-tertiary" style={{ width: `${layoutWidth.toFixed(1)}%` }} />
+                                                    <div class="h-full bg-secondary" style={{ width: `${drawWidth.toFixed(1)}%` }} />
+                                                </div>
+                                                <span class="mono w-20 shrink-0 text-right text-body-s text-on-surface">{s.total.toFixed(2)} ms</span>
+                                            </div>
+                                        );
+                                    }}
+                                </For>
+                            </div>
+                            <div class="flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-outline-variant px-3 py-2 text-body-s text-on-surface-variant">
+                                <span class="flex items-center gap-1.5"><span class="inline-block size-2.5 rounded-full bg-primary" /> load</span>
+                                <span class="flex items-center gap-1.5"><span class="inline-block size-2.5 rounded-full bg-tertiary" /> layout</span>
+                                <span class="flex items-center gap-1.5"><span class="inline-block size-2.5 rounded-full bg-secondary" /> draw</span>
+                                <span class="ml-auto mono">{perfStats()!.p95.toFixed(2)} ms p95</span>
                             </div>
                         </div>
-                        <div class="rise-in mt-3 hidden overflow-x-auto rounded-xl border border-outline-variant sm:block">
+                        <div class="rise-in mt-3 overflow-x-auto rounded-xl border border-outline-variant">
                             <table class="mono w-full min-w-[340px] text-left text-body-s text-on-surface-variant">
                                 <thead class="bg-surface-container text-label-s">
                                     <tr>

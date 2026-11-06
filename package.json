@@ -1,7 +1,7 @@
 {
   "name": "metalslugfontreborn-solid2",
   "version": "1.0.0",
-  "description": "Web app version of [MetalSlugFontReborn](https://github.com/Mitra-88/MetalSlugFontReborn). Reimplemented to run entirely client-side using Solid2 ",
+  "description": "Metal Slug text-to-PNG renderer in Solid 2 + Vite, client-side sprite canvas, M3 UI, profiler, and offline static build",
   "private": true,
   "packageManager": "bun@1.4.4",
   "type": "module",
@@ -23,6 +23,7 @@
   "homepage": "https://github.com/Mitra-88/MetalSlugFontRebornSolid2#readme",
   "dependencies": {
     "@solidjs/web": "^2.0.0-rc.21",
+    "current-device": "2.6.0",
     "solid-js": "^2.0.0-rc.21"
   },
   "devDependencies": {
