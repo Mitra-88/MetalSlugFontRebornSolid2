@@ -70,4 +70,4 @@ The gate is `typecheck` plus `test` plus `build`. Run them in that order before 
 
 ## License
 
-GNU General Public License v3.0. See [LICENSE](LICENSE) and the in-app [License](license.html) page.
+GNU General Public License v3.0. See [LICENSE](LICENSE).

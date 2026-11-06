@@ -47,9 +47,7 @@ export default function License(): JSX.Element {
         >
             <header class="rise-in mx-auto mb-6 max-w-2xl text-center">
                 <h1 class="text-display-s">License</h1>
-                <p class="mx-auto mt-2 max-w-xl text-body-l text-on-surface-variant">
-                    The full GNU General Public License v3 text that ships with this project. You can copy and share it as written, but you cannot change it.
-                </p>
+                <p class="mx-auto mt-2 text-body-l text-on-surface-variant">Licensed under GNU General Public License v3.</p>
             </header>
 
             <Show when={licenseText()}>{(text) => <LicenseBody text={text()} />}</Show>
@@ -65,7 +63,7 @@ export default function License(): JSX.Element {
 function LicenseBody(props: { text: string }): JSX.Element {
     const blocks = parseLicense(props.text);
     return (
-        <section class="rise-in card mx-auto max-w-3xl overflow-hidden">
+        <section class="rise-in card mx-auto max-w-4xl overflow-hidden">
             <div class="flex items-center gap-2 border-b border-outline-variant bg-surface-container px-5 py-3">
                 <Info size={18} />
                 <h2 class="text-title-m">GNU General Public License v3</h2>
@@ -74,11 +72,11 @@ function LicenseBody(props: { text: string }): JSX.Element {
             <div class="max-h-[70vh] overflow-y-auto p-5 sm:p-8">
                 <For each={blocks}>
                     {(block) => (
-                        <div class="mx-auto mb-6 max-w-2xl last:mb-0">
+                        <div class="mx-auto mb-6 max-w-2xl text-center last:mb-0">
                             <Show when={block.heading}>
-                                <h3 class="text-center text-body-m font-semibold text-on-surface">{block.heading}</h3>
+                                <h3 class="text-body-m font-semibold text-on-surface">{block.heading}</h3>
                             </Show>
-                            <pre class="mt-2 text-justify whitespace-pre-wrap break-words font-mono text-[0.8rem] leading-relaxed text-on-surface-variant [overflow-wrap:anywhere]">{block.body.join("\n")}</pre>
+                            <pre class="mt-2 whitespace-pre-wrap break-words text-center font-mono text-[0.8rem] leading-relaxed text-on-surface-variant [overflow-wrap:anywhere]">{block.body.join("\n")}</pre>
                         </div>
                     )}
                 </For>
