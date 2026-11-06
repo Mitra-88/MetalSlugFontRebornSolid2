@@ -9,13 +9,17 @@ const FALLBACK_PALETTE: RGB[] = [[128, 128, 128]];
 export function rankColors(data: ArrayLike<number>, max: number): RGB[] {
     const counts = new Map<number, { count: number; rgb: RGB }>();
     for (let i = 0; i + 3 < data.length; i += 4) {
-        if (data[i + 3] <= 127) continue;
-        const key = (data[i] << 16) | (data[i + 1] << 8) | data[i + 2];
+        const r = data[i] ?? 0;
+        const g = data[i + 1] ?? 0;
+        const b = data[i + 2] ?? 0;
+        const a = data[i + 3] ?? 0;
+        if (a <= 127) continue;
+        const key = (r << 16) | (g << 8) | b;
         const current = counts.get(key);
         if (current) {
             current.count++;
         } else {
-            counts.set(key, { count: 1, rgb: [data[i], data[i + 1], data[i + 2]] });
+            counts.set(key, { count: 1, rgb: [r, g, b] });
         }
     }
     return [...counts.values()]
@@ -84,7 +88,8 @@ export function drawColorIcon(canvas: HTMLCanvasElement, palette: RGB[], margin 
     }
     ctx.beginPath();
     ctx.arc(center, center, radius, 0, Math.PI * 2);
-    const [r, g, b] = darken(palette[0], 160);
+    const first = palette[0] ?? [128, 128, 128];
+    const [r, g, b] = darken(first, 160);
     ctx.strokeStyle = `rgb(${r},${g},${b})`;
     ctx.lineWidth = Math.max(1, Math.round(size / 16));
     ctx.stroke();

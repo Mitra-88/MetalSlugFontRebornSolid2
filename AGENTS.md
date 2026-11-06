@@ -10,10 +10,9 @@ Stack: Solid 2.0 RC (`solid-js` + `@solidjs/web`, TypeScript) + Vite 8 (MPA, thr
 
 - Bun 1.4.4. `bun install` once; `bun.lock` is committed. `node_modules/` is still required (Bun resolves through it) and is disposable: `bun install --frozen-lockfile` restores it.
 - `bun run dev` (port 5173), `bun run build`, `bun run preview`, `bun run typecheck`, `bun run test`.
-- `bun run test` runs four assert-based self-checks, no test framework: `layout`, `perf`, `sprites`, `palette`. One check alone: `bun tests/sprites.test.js`. Never use `bun test`: that is Bun's built-in runner with different semantics.
+- `bun run test` runs five assert-based self-checks, no test framework: `layout`, `perf`, `sprites`, `palette`, `behavior`. One check alone: `bun tests/sprites.test.ts`. Never use `bun test`: that is Bun's built-in runner with different semantics.
 - There is no lint or formatter. `typecheck` + `test` + `build` are the gate.
-- TypeScript 7 is the native compiler behind the `tsc` bin. `@types/node` stays because `vite.config.ts` and the tests use `node:` builtins.
-- `tsconfig.json` is minified to one line; leave its formatting alone.
+- TypeScript 7 is the native compiler behind the `tsc` bin. `@types/node` stays because `vite.config.ts` and the tests use `node:` builtins. `tsconfig.json` is strict with `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `verbatimModuleSyntax`, `noUncheckedSideEffectImports`, `forceConsistentCasingInFileNames`, and `useUnknownInCatchVariables`; it covers `src`, `tests`, and `vite.config.ts`. Tests are TypeScript and import src with `allowImportingTsExtensions`.
 
 ## Coding rules
 

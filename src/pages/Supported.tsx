@@ -42,24 +42,24 @@ export default function Supported(): JSX.Element {
                 </p>
             </header>
 
-            <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5">
                 <For each={FONTS}>
                     {(n, i) => (
-                        <section class="rise-in card p-5" style={{ "animation-delay": `${i() * 60}ms` }}>
-                            <div class="flex items-center justify-between">
+                        <section class="rise-in card p-4 sm:p-5" style={{ "animation-delay": `${i() * 60}ms` }}>
+                            <div class="flex items-center justify-between gap-3">
                                 <h2 class="text-title-m">Font {n}</h2>
-                                <span class="chip-static">
+                                <span class="chip-static shrink-0">
                                     {FONT_SUPPORT[n].colors.length} {FONT_SUPPORT[n].colors.length === 1 ? "color" : "colors"}
                                 </span>
                             </div>
                             <ul class="mt-3 flex flex-col gap-2">
                                 <For each={supportRows(n)}>
                                     {(row) => (
-                                        <li class="rounded-2xl bg-surface-container px-4 py-2.5">
+                                        <li class="rounded-2xl bg-surface-container px-3 py-2.5 sm:px-4">
                                             <p class="text-label-s text-on-surface-variant">{row.label}</p>
                                             <Show
                                                 when={row.colors}
-                                                fallback={<p class="mt-0.5 text-body-m break-words text-on-surface">{row.value}</p>}
+                                                fallback={<p class="mt-0.5 break-words text-body-m leading-relaxed text-on-surface [overflow-wrap:anywhere]">{row.value}</p>}
                                             >
                                                 <div class="mt-1.5 flex flex-wrap gap-1.5">
                                                     <For each={row.colors}>
@@ -80,7 +80,7 @@ export default function Supported(): JSX.Element {
                     )}
                 </For>
 
-                <section class="rise-in rounded-card bg-error-container p-5 text-on-error-container md:col-span-2">
+                <section class="rise-in rounded-card bg-error-container p-4 text-on-error-container sm:col-span-2 sm:p-5">
                     <h2 class="text-title-m">Unsupported characters</h2>
                     <p class="mt-2 text-body-m">
                         {UNUSED} have sprites but are unused, so they are skipped. {NO_SPRITES} have no sprites in any font. Anything a font does not list is skipped automatically while the rest of your text still renders.

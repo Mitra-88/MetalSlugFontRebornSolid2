@@ -18,7 +18,7 @@ export interface PerfSample {
 interface ActiveToken {
     start: number;
     meta: Record<string, unknown>;
-    phases: Record<string, number>;
+    phases: Partial<Record<keyof PerfPhases, number>>;
 }
 
 const RING_CAPACITY = 100;
@@ -38,7 +38,7 @@ export function begin(meta: Partial<PerfSample> = {}): ActiveToken {
     return active;
 }
 
-export function mark(token: ActiveToken, phase: string): void {
+export function mark(token: ActiveToken, phase: keyof PerfPhases): void {
     if (!token || token !== active) return;
     token.phases[phase] = now();
 }
@@ -49,6 +49,7 @@ export function end(token: ActiveToken, extra: Partial<PerfSample> = {}): PerfSa
     const phases: PerfPhases = {};
     let prev = token.start;
     for (const [name, at] of Object.entries(token.phases)) {
+        if (typeof at !== "number") continue;
         phases[name as keyof PerfPhases] = at - prev;
         prev = at;
     }
@@ -75,7 +76,7 @@ export function cancel(token: ActiveToken): void {
 function percentile(sorted: number[], p: number): number {
     if (sorted.length === 0) return 0;
     const index = Math.min(sorted.length - 1, Math.ceil((p / 100) * sorted.length) - 1);
-    return sorted[Math.max(0, index)];
+    return sorted[Math.max(0, index)] ?? 0;
 }
 
 export function samples(): PerfSample[] {
@@ -83,7 +84,7 @@ export function samples(): PerfSample[] {
 }
 
 export function last(): PerfSample | null {
-    return ring.length ? ring[ring.length - 1] : null;
+    return ring.length ? (ring[ring.length - 1] ?? null) : null;
 }
 
 export interface PhaseStats {
@@ -115,18 +116,18 @@ export function stats(): PerfStats | null {
     for (const [name, values] of Object.entries(phaseStats)) {
         const sorted = [...values].sort((a, b) => a - b);
         aggregate[name as keyof PerfPhases] = {
-            min: sorted[0],
+            min: sorted[0] ?? 0,
             p50: percentile(sorted, 50),
             p95: percentile(sorted, 95),
-            max: sorted[sorted.length - 1],
+            max: sorted[sorted.length - 1] ?? 0,
         };
     }
     return {
         count: ring.length,
-        min: totals[0],
+        min: totals[0] ?? 0,
         p50: percentile(totals, 50),
         p95: percentile(totals, 95),
-        max: totals[totals.length - 1],
+        max: totals[totals.length - 1] ?? 0,
         phases: aggregate,
     };
 }

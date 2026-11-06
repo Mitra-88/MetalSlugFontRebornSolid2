@@ -2,36 +2,44 @@ import assert from "node:assert/strict";
 import { readdirSync } from "node:fs";
 import { join } from "node:path";
 import { FONT_SUPPORT, UNUSED_SYMBOLS, getCharPath } from "../src/lib/fonts.ts";
+import type { ColorName, FontId } from "../src/lib/fonts.ts";
 
-const ROOT = join(import.meta.dirname, "..");
-const FONTS_DIR = join(ROOT, "public", "assets", "fonts");
-const LOWER = "abcdefghijklmnopqrstuvwxyz";
-const UPPER = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+const ROOT: string = join(import.meta.dirname, "..");
+const FONTS_DIR: string = join(ROOT, "public", "assets", "fonts");
+const LOWER: string = "abcdefghijklmnopqrstuvwxyz";
+const UPPER: string = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-function dirNames(path) {
+function dirNames(path: string): string[] {
     try {
-        return readdirSync(path, { withFileTypes: true }).filter((e) => e.isDirectory()).map((e) => e.name);
+        return readdirSync(path, { withFileTypes: true })
+            .filter((e) => e.isDirectory())
+            .map((e) => e.name);
     } catch {
         return [];
     }
 }
 
-function fileStems(path) {
+function fileStems(path: string): Set<string> {
     try {
-        return new Set(readdirSync(path, { withFileTypes: true }).filter((e) => e.isFile()).map((e) => e.name.replace(/\.png$/, "")));
+        return new Set(
+            readdirSync(path, { withFileTypes: true })
+                .filter((e) => e.isFile())
+                .map((e) => e.name.replace(/\.png$/, ""))
+        );
     } catch {
         return new Set();
     }
 }
 
-const problems = [];
-const report = [];
+const problems: string[] = [];
+const report: string[] = [];
 
-for (const fontId of Object.keys(FONT_SUPPORT)) {
+for (const fontKey of Object.keys(FONT_SUPPORT)) {
+    const fontId: FontId = fontKey as FontId;
     const support = FONT_SUPPORT[fontId];
-    const fontDir = join(FONTS_DIR, `font-${fontId}`);
-    const colorDirs = dirNames(fontDir).filter((d) => d.startsWith("ms-"));
-    const expectedColors = support.colors.map((c) => `ms-${c}`);
+    const fontDir: string = join(FONTS_DIR, `font-${fontId}`);
+    const colorDirs: string[] = dirNames(fontDir).filter((d: string) => d.startsWith("ms-"));
+    const expectedColors: string[] = support.colors.map((c: ColorName) => `ms-${c}`);
 
     for (const wanted of expectedColors) {
         if (!colorDirs.includes(wanted)) problems.push(`font ${fontId}: declared color ${wanted} has no directory`);
@@ -41,11 +49,11 @@ for (const fontId of Object.keys(FONT_SUPPORT)) {
     }
 
     for (const colorDir of colorDirs) {
-        const label = `font ${fontId} ${colorDir}`;
-        const symbols = fileStems(join(fontDir, colorDir, "symbols"));
-        const lower = fileStems(join(fontDir, colorDir, "letters", "lower-case"));
-        const upper = fileStems(join(fontDir, colorDir, "letters", "upper-case"));
-        const numbers = fileStems(join(fontDir, colorDir, "numbers"));
+        const label: string = `font ${fontId} ${colorDir}`;
+        const symbols: Set<string> = fileStems(join(fontDir, colorDir, "symbols"));
+        const lower: Set<string> = fileStems(join(fontDir, colorDir, "letters", "lower-case"));
+        const upper: Set<string> = fileStems(join(fontDir, colorDir, "letters", "upper-case"));
+        const numbers: Set<string> = fileStems(join(fontDir, colorDir, "numbers"));
 
         if (support.lowerCase) {
             for (const c of LOWER) if (!lower.has(c)) problems.push(`${label}: lowercase '${c}' declared but no sprite`);
@@ -57,18 +65,19 @@ for (const fontId of Object.keys(FONT_SUPPORT)) {
             if (!numbers.has(String(n))) problems.push(`${label}: number '${n}' declared but no sprite`);
         }
 
-        const expectedSymbolFiles = new Set();
+        const expectedSymbolFiles: Set<string> = new Set<string>();
         for (const sym of support.symbols) {
-            const path = getCharPath(fontId, colorDir.replace(/^ms-/, ""), sym);
+            const colorName: ColorName = colorDir.replace(/^ms-/, "") as ColorName;
+            const path: string | null = getCharPath(fontId, colorName, sym);
             if (!path) {
                 problems.push(`${label}: symbol ${JSON.stringify(sym)} has no filename mapping in SPECIAL_CHARACTERS`);
                 continue;
             }
-            const file = path.split("/").pop().replace(/\.png$/, "");
+            const file: string = path.split("/").pop()?.replace(/\.png$/, "") ?? "";
             expectedSymbolFiles.add(file);
             if (!symbols.has(file)) problems.push(`${label}: symbol '${sym}' (${file}.png) declared but no sprite`);
         }
-        const unusedFiles = new Set(Object.values(UNUSED_SYMBOLS[fontId] ?? {}));
+        const unusedFiles: Set<string> = new Set<string>(Object.values(UNUSED_SYMBOLS[fontId] ?? {}));
         for (const file of unusedFiles) {
             if (!symbols.has(file)) problems.push(`${label}: unused symbol ${file}.png has no sprite`);
         }

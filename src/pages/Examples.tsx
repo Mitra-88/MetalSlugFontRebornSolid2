@@ -30,21 +30,21 @@ export default function Examples(): JSX.Element {
                 </p>
             </header>
 
-            <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
+            <div class="grid grid-cols-1 gap-4 sm:gap-5 lg:grid-cols-2">
                 <For each={EXAMPLES}>
                     {(ex, i) => (
                         <section class="rise-in card overflow-hidden" style={{ "animation-delay": `${i() * 60}ms` }}>
-                            <div class="flex items-center justify-between px-5 pb-1 pt-4">
+                            <div class="flex items-center justify-between px-4 pb-1 pt-4 sm:px-5">
                                 <h2 class="text-title-m">Font {ex.font}</h2>
                                 <span class="chip-static">
                                     {FONT_SUPPORT[ex.font].colors.length} {FONT_SUPPORT[ex.font].colors.length === 1 ? "color" : "colors"}
                                 </span>
                             </div>
-                            <ul class="flex flex-col gap-2 p-4">
+                            <ul class="flex flex-col gap-2 p-3 sm:p-4">
                                 <For each={FONT_SUPPORT[ex.font].colors}>
                                     {(color) => (
-                                        <li class="flex items-center gap-3 rounded-2xl bg-surface-container px-3 py-2">
-                                            <span class="flex w-16 shrink-0 items-center gap-2 text-label-m text-on-surface-variant">
+                                        <li class="flex flex-col gap-2 rounded-2xl bg-surface-container px-3 py-2.5 sm:flex-row sm:items-center sm:gap-3">
+                                            <span class="flex w-full items-center gap-2 text-label-m text-on-surface-variant sm:w-16 sm:shrink-0">
                                                 <ColorDot font={ex.font} color={color} />
                                                 {capitalize(color)}
                                             </span>
@@ -55,7 +55,7 @@ export default function Examples(): JSX.Element {
                                                 alt={`Font ${ex.font} ${color}`}
                                                 loading="lazy"
                                                 decoding="async"
-                                                class="pixelated h-auto min-w-0 max-w-full flex-1"
+                                                class="pixelated h-auto min-w-0 w-full max-w-full flex-1"
                                             />
                                         </li>
                                     )}

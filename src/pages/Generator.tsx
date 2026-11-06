@@ -46,7 +46,7 @@ function Segmented<T extends string | number>(props: SegmentedProps<T>): JSX.Ele
             class="m3-seg bg-surface-highest"
             role="radiogroup"
             aria-label={props.label}
-            onKeyDown={(e) => radioNav(e, props.options.length, index(), (i) => props.onChange(props.options[i].value))}
+            onKeyDown={(e) => radioNav(e, props.options.length, index(), (i) => { const opt = props.options[i]; if (opt) props.onChange(opt.value); })}
         >
             <div
                 class="m3-seg-thumb"
@@ -79,7 +79,7 @@ function ColorChips(props: { options: ColorName[]; value: ColorName; font: FontI
             class="flex flex-wrap gap-2"
             role="radiogroup"
             aria-label="Color"
-            onKeyDown={(e) => radioNav(e, props.options.length, props.options.indexOf(props.value), (i) => props.onChange(props.options[i]))}
+            onKeyDown={(e) => radioNav(e, props.options.length, props.options.indexOf(props.value), (i) => { const c = props.options[i]; if (c) props.onChange(c); })}
         >
             <For each={props.options}>
                 {(c) => (
@@ -131,7 +131,8 @@ function loadSettings(): { font: FontId; color: ColorName; scale: number } {
     if (!parsed || typeof parsed !== "object") return { font: "1", color: "blue", scale: 1 };
     const font: FontId = FONTS.includes(parsed.font as FontId) ? (parsed.font as FontId) : "1";
     const colors = FONT_SUPPORT[font].colors;
-    const color: ColorName = colors.includes(parsed.color as ColorName) ? (parsed.color as ColorName) : colors[0];
+    const fallbackColor: ColorName = colors[0] ?? "blue";
+    const color: ColorName = colors.includes(parsed.color as ColorName) ? (parsed.color as ColorName) : fallbackColor;
     const scale = [1, 2, 3, 4].includes(parsed.scale as number) ? (parsed.scale as number) : 1;
     return { font, color, scale };
 }
@@ -278,7 +279,8 @@ export default function Generator(): JSX.Element {
         revalidate(() => {
             setFont(f);
             const colors = FONT_SUPPORT[f].colors;
-            const nextColor = colors.includes(color()) ? color() : colors[0];
+            const fallback: ColorName = colors[0] ?? "blue";
+            const nextColor: ColorName = colors.includes(color()) ? color() : fallback;
             setColor(nextColor);
             preloadIdle(f, nextColor);
         });
@@ -348,7 +350,7 @@ export default function Generator(): JSX.Element {
                 { href: "https://github.com/Mitra-88/MetalSlugFontRebornSolid2", label: "GitHub" },
             ]}
         >
-            <div class="grid grid-cols-1 items-start gap-6 lg:grid-cols-[400px_1fr]">
+            <div class="grid grid-cols-1 items-start gap-4 sm:gap-6 md:grid-cols-[minmax(280px,360px)_1fr] lg:grid-cols-[400px_1fr]">
                 <section class="rise-in card p-5 sm:p-6">
                     <h1 class="text-headline-s">Pixel text</h1>
                     <p class="mt-1 text-body-m text-on-surface-variant">
@@ -414,7 +416,7 @@ export default function Generator(): JSX.Element {
                         </span>
                     </div>
 
-                    <div class="stage relative mt-4 grid min-h-[260px] place-items-center overflow-hidden p-4 sm:min-h-[300px]" aria-busy={status() === "loading" ? "true" : "false"}>
+                    <div class="stage relative mt-4 grid min-h-[220px] place-items-center overflow-hidden p-4 sm:min-h-[300px]" aria-busy={status() === "loading" ? "true" : "false"}>
                         <canvas
                             ref={canvas}
                             class={[
@@ -499,15 +501,39 @@ export default function Generator(): JSX.Element {
                     </Show>
 
                     <Show when={showPerf() && perfStats()}>
-                        <div class="rise-in mt-3 overflow-x-auto rounded-xl border border-outline-variant">
+                        <div class="rise-in mt-3 flex flex-col gap-2 sm:hidden">
+                            <For each={recentSamples()}>
+                                {(s, i) => (
+                                    <div class="mono flex items-center justify-between gap-2 rounded-xl border border-outline-variant px-3 py-2 text-body-s text-on-surface-variant">
+                                        <span class="font-semibold text-on-surface">run {Math.max(1, (perfStats()?.count ?? 0) - recentSamples().length + i() + 1)}</span>
+                                        <span class="flex flex-wrap gap-x-2 gap-y-0.5 text-right">
+                                            <span>load {(s.phases.load ?? 0).toFixed(1)}</span>
+                                            <span>layout {(s.phases.layout ?? 0).toFixed(2)}</span>
+                                            <span>draw {(s.phases.draw ?? 0).toFixed(2)}</span>
+                                            <span class="text-on-surface">{s.total.toFixed(2)} ms</span>
+                                        </span>
+                                    </div>
+                                )}
+                            </For>
+                            <div class="mono flex items-center justify-between gap-2 rounded-xl bg-surface-high px-3 py-2 text-body-s text-on-surface">
+                                <span class="font-semibold">p95</span>
+                                <span class="flex flex-wrap gap-x-2 gap-y-0.5 text-right">
+                                    <span>load {(perfStats()!.phases.load?.p95 ?? 0).toFixed(1)}</span>
+                                    <span>layout {(perfStats()!.phases.layout?.p95 ?? 0).toFixed(2)}</span>
+                                    <span>draw {(perfStats()!.phases.draw?.p95 ?? 0).toFixed(2)}</span>
+                                    <span>{perfStats()!.p95.toFixed(2)} ms</span>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="rise-in mt-3 hidden overflow-x-auto rounded-xl border border-outline-variant sm:block">
                             <table class="mono w-full min-w-[340px] text-left text-body-s text-on-surface-variant">
                                 <thead class="bg-surface-container text-label-s">
                                     <tr>
-                                        <th class="px-3 py-2 font-semibold">run</th>
-                                        <th class="px-3 py-2 font-semibold">load</th>
-                                        <th class="px-3 py-2 font-semibold">layout</th>
-                                        <th class="px-3 py-2 font-semibold">draw</th>
-                                        <th class="px-3 py-2 font-semibold">total</th>
+                                        <th scope="col" class="px-3 py-2 font-semibold">run</th>
+                                        <th scope="col" class="px-3 py-2 font-semibold">load</th>
+                                        <th scope="col" class="px-3 py-2 font-semibold">layout</th>
+                                        <th scope="col" class="px-3 py-2 font-semibold">draw</th>
+                                        <th scope="col" class="px-3 py-2 font-semibold">total</th>
                                     </tr>
                                 </thead>
                                 <tbody>

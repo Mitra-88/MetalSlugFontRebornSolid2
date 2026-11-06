@@ -183,19 +183,45 @@ export function PaletteMenu(): JSX.Element {
     );
 }
 
-export function AppBar(props: { back?: boolean; actions?: JSX.Element }): JSX.Element {
+export function BottomNav(): JSX.Element {
+    const path = window.location.pathname;
+    const items = [
+        { href: "./index.html", label: "Generator", key: "index" },
+        { href: "./examples.html", label: "Examples", key: "examples" },
+        { href: "./supported.html", label: "Supported", key: "supported" },
+    ];
+    const isActive = (key: string): boolean =>
+        key === "index" ? path.endsWith("/") || path.endsWith("index.html") : path.endsWith(`${key}.html`);
+    return (
+        <nav class="m3-nav-bar" aria-label="Primary">
+            <For each={items}>
+                {(item) => (
+                    <a
+                        href={item.href}
+                        class="m3-nav-item"
+                        aria-current={isActive(item.key) ? "page" : undefined}
+                    >
+                        <span class="nav-pill">{item.label}</span>
+                    </a>
+                )}
+            </For>
+        </nav>
+    );
+}
+
+export function AppBar(props: { back?: boolean | undefined; actions?: JSX.Element | undefined }): JSX.Element {
     return (
         <header class="app-bar">
             <div class="mx-auto flex h-16 w-full max-w-6xl items-center gap-3 px-4 sm:px-6">
-                <Show when={props.back} fallback={<img src="/assets/icons/Raubtier.webp" alt="" class="size-9 select-none object-contain" />}>
-                    <a href="./index.html" class="icon-btn -ml-2" aria-label="Back to generator">
+                <Show when={props.back} fallback={<img src="/assets/icons/Raubtier.webp" alt="" class="size-9 shrink-0 select-none object-contain" />}>
+                    <a href="./index.html" class="icon-btn -ml-2 shrink-0" aria-label="Back to generator">
                         <ArrowLeft size={20} />
                     </a>
                 </Show>
-                <a href="./index.html" class="text-title-l no-underline outline-offset-4" style={{ color: "var(--m3-on-surface)" }}>
+                <a href="./index.html" class="min-w-0 truncate text-title-l no-underline outline-offset-4" style={{ color: "var(--m3-on-surface)" }}>
                     Metal Slug Font <span style={{ color: "var(--m3-primary)" }}>Reborn</span>
                 </a>
-                <div class="ml-auto flex items-center gap-1">{props.actions}</div>
+                <div class="ml-auto flex shrink-0 items-center gap-1">{props.actions}</div>
             </div>
         </header>
     );
@@ -206,12 +232,12 @@ export interface FooterLink {
     label: string;
 }
 
-export function Page(props: { back?: boolean; actions?: JSX.Element; links?: FooterLink[]; children?: JSX.Element }): JSX.Element {
+export function Page(props: { back?: boolean | undefined; actions?: JSX.Element | undefined; links?: FooterLink[] | undefined; children?: JSX.Element | undefined }): JSX.Element {
     return (
         <div class="flex min-h-dvh flex-col">
             <AppBar back={props.back} actions={props.actions} />
-            <main class="mx-auto w-full max-w-6xl flex-1 px-4 pb-16 pt-6 sm:px-6 sm:pt-8">{props.children}</main>
-            <footer class="mx-auto w-full max-w-6xl px-4 pb-10 sm:px-6">
+            <main class="mx-auto w-full max-w-6xl flex-1 px-4 pb-24 pt-6 sm:px-6 sm:pb-16 sm:pt-8">{props.children}</main>
+            <footer class="mx-auto w-full max-w-6xl px-4 pb-28 sm:px-6 sm:pb-10">
                 <Show when={props.links}>
                     <div class="flex flex-wrap items-center justify-center gap-1 border-t border-outline-variant pt-6 text-body-m text-on-surface-variant">
                         <For each={props.links}>
@@ -232,6 +258,7 @@ export function Page(props: { back?: boolean; actions?: JSX.Element; links?: Foo
                     Fan tool for the Metal Slug font sprites. Metal Slug is a trademark of SNK Corporation.
                 </p>
             </footer>
+            <BottomNav />
         </div>
     );
 }

@@ -123,7 +123,8 @@ export function preloadIdle(fontId: FontId, color: ColorName, batch = 10): void 
         }
         let loaded = 0;
         while (cursor < paths.length && loaded < batch) {
-            loadImage(paths[cursor++]);
+            const path = paths[cursor++];
+            if (path) loadImage(path);
             loaded++;
         }
         if (cursor < paths.length) idle(step);
@@ -143,7 +144,7 @@ export function computeLayout(
     let totalHeight = 0;
 
     for (let i = 0; i < lines.length; i++) {
-        const rawLine = lines[i].replace(/\r$/, "");
+        const rawLine = (lines[i] ?? "").replace(/\r$/, "");
         if (!rawLine.trim()) {
             lineData.push({ empty: true, height: EMPTY_LINE_HEIGHT });
             totalHeight += EMPTY_LINE_HEIGHT;
@@ -215,6 +216,7 @@ function drawLayout(canvas: HTMLCanvasElement, layout: ComputedLayout, scale: nu
     let y = 0;
     for (let i = 0; i < layout.lines.length; i++) {
         const ld = layout.lines[i];
+        if (!ld) continue;
         if (ld.empty) {
             y += ld.height;
         } else {
