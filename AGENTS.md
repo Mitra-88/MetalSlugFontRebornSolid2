@@ -52,7 +52,7 @@ Invariants:
 - `status` is one signal: `idle | loading | success | error`. The preview canvas is always mounted, overlays are absolutely positioned siblings. Never wrap it in `<Show>`: that desynced the ref and drew into a detached canvas.
 - Error and empty transitions must clear `warning`, `imgMeta`, `sample`, and `errorKind`, otherwise stale dimensions and profiler numbers survive. The chips row renders only while `imgMeta` is non-empty.
 - `failed` errors grow a Try again button and are retryable; `empty` and `too-large` are not.
-- `ColorDot` cancels pending draws when `font` or `color` changes. Palette colors are sampled from `A`, `M`, `W` together so one thin glyph does not skew the pie.
+- `ColorDot` cancels pending draws when `font` or `color` changes. Palette colors are sampled once per color name from the first font that has it (`A` only), matching the Python app, so the same color shows the same pie everywhere.
 
 ## Solid 2.0 RC
 

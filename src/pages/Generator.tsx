@@ -150,7 +150,15 @@ export default function Generator(): JSX.Element {
     const [warning, setWarning] = createSignal("");
     const [imgMeta, setImgMeta] = createSignal("");
     const [sample, setSample] = createSignal<PerfSample | null>(null);
-    const [showPerf, setShowPerf] = createSignal(false);
+    const PERF_KEY = "msfb-perf";
+    function loadPerfVisible(): boolean {
+        try {
+            return localStorage.getItem(PERF_KEY) === "1";
+        } catch {
+            return false;
+        }
+    }
+    const [showPerf, setShowPerf] = createSignal(loadPerfVisible());
     const [loadingCount, setLoadingCount] = createSignal(0);
     const [skipped, setSkipped] = createSignal<string[]>([]);
 
@@ -263,6 +271,14 @@ export default function Generator(): JSX.Element {
     function saveSettings(): void {
         try {
             localStorage.setItem(SETTINGS_KEY, JSON.stringify({ font: font(), color: color(), scale: scale() }));
+        } catch {}
+    }
+
+    function togglePerf(): void {
+        const next = !showPerf();
+        setShowPerf(next);
+        try {
+            localStorage.setItem(PERF_KEY, next ? "1" : "0");
         } catch {}
     }
 
@@ -492,8 +508,8 @@ export default function Generator(): JSX.Element {
                                 </span>
                                 <span class="chip-static mono">{sample()!.sprites} {sample()!.sprites === 1 ? "sprite" : "sprites"}</span>
                                 <span class="chip-static mono">{cacheHitPct()}% cached</span>
-                                <button type="button" class="m3-chip" onClick={() => setShowPerf(!showPerf())} aria-expanded={showPerf() ? "true" : "false"}>
-                                    Details
+                                <button type="button" class="m3-chip" onClick={togglePerf} aria-expanded={showPerf() ? "true" : "false"}>
+                                    Timing details
                                     <ChevronDown size={14} class={["transition-transform duration-300", { "rotate-180": showPerf() }]} />
                                 </button>
                             </Show>
@@ -558,8 +574,8 @@ export default function Generator(): JSX.Element {
                                 </tbody>
                             </table>
                         </div>
-                        <p class="mt-2 text-body-s text-on-surface-variant">
-                            Last {perfStats()!.count} renders sampled. Sprites decode once into GPU bitmaps and layouts are memoized per text.
+                        <p class="mt-2 text-body-s leading-relaxed text-on-surface-variant">
+                            Times are in ms. Load is sprite loading, layout is arranging characters, draw is painting the canvas. Each row is one render, newest at the bottom. The p95 row is the slow end of the last {perfStats()!.count} runs, so 19 out of 20 runs are this fast or faster. Sprites load once and stay cached, so later runs save load time.
                         </p>
                     </Show>
 

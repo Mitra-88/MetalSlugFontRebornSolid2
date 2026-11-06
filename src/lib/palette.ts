@@ -1,5 +1,5 @@
 import { loadImage } from "./render.ts";
-import { getCharPath } from "./fonts.ts";
+import { FONT_SUPPORT, getCharPath } from "./fonts.ts";
 import type { ColorName, FontId } from "./fonts.ts";
 
 export type RGB = [number, number, number];
@@ -36,10 +36,11 @@ export function darken(rgb: RGB, factor: number): RGB {
 const paletteCache = new Map<string, RGB[]>();
 const pendingPalettes = new Map<string, Promise<RGB[]>>();
 
-const SAMPLE_CHARS = ["A", "M", "W"] as const;
+const FONT_ORDER: FontId[] = ["1", "2", "3", "4", "5"] as FontId[];
 
 export function paletteFor(font: FontId, color: ColorName, max = 6): Promise<RGB[]> {
-    const key = `${font}|${color}`;
+    void font;
+    const key = color;
     const cached = paletteCache.get(key);
     if (cached) return Promise.resolve(cached);
     const inFlight = pendingPalettes.get(key);
@@ -47,15 +48,11 @@ export function paletteFor(font: FontId, color: ColorName, max = 6): Promise<RGB
 
     const promise = (async (): Promise<RGB[]> => {
         try {
-            const sprites = await Promise.all(
-                SAMPLE_CHARS.map(async (ch) => {
-                    const path = getCharPath(font, color, ch);
-                    if (!path) return null;
-                    return loadImage(path);
-                })
-            );
-            const allData: number[] = [];
-            for (const sprite of sprites) {
+            for (const canonical of FONT_ORDER) {
+                if (!FONT_SUPPORT[canonical].colors.includes(color)) continue;
+                const path = getCharPath(canonical, color, "A");
+                if (!path) continue;
+                const sprite = await loadImage(path);
                 if (!sprite || sprite.w <= 0 || sprite.h <= 0) continue;
                 const canvas = document.createElement("canvas");
                 canvas.width = sprite.w;
@@ -63,14 +60,13 @@ export function paletteFor(font: FontId, color: ColorName, max = 6): Promise<RGB
                 const ctx = canvas.getContext("2d", { willReadFrequently: true });
                 if (!ctx) continue;
                 ctx.drawImage(sprite.drawable, 0, 0);
-                const data = ctx.getImageData(0, 0, sprite.w, sprite.h).data;
-                for (let i = 0; i < data.length; i++) allData.push(data[i]!);
+                const palette = rankColors(ctx.getImageData(0, 0, sprite.w, sprite.h).data, max);
+                if (palette.length > 0) {
+                    paletteCache.set(key, palette);
+                    return palette;
+                }
             }
-            if (allData.length === 0) return FALLBACK_PALETTE;
-            const palette = rankColors(allData, max);
-            const result = palette.length > 0 ? palette : FALLBACK_PALETTE;
-            paletteCache.set(key, result);
-            return result;
+            return FALLBACK_PALETTE;
         } catch {
             return FALLBACK_PALETTE;
         } finally {
