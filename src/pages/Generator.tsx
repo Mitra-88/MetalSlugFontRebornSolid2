@@ -1,7 +1,7 @@
 import { For, Show, createMemo, createSignal, flush, onSettled } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import device from "current-device";
-import { Activity, Check, ChevronDown, Download, Image, Info, TriangleAlert } from "../lib/icons.tsx";
+import { Activity, AutoAwesome, Check, ChevronDown, Image, Info, TriangleAlert } from "../lib/icons.tsx";
 import { ColorDot, Page, PaletteMenu, ThemeToggle } from "../Page.tsx";
 import { FONT_SUPPORT, HARD_LIMIT, collectUnsupported } from "../lib/fonts.ts";
 import type { ColorName, FontId } from "../lib/fonts.ts";
@@ -364,8 +364,8 @@ export default function Generator(): JSX.Element {
             }
             links={[
                 { href: "./supported.html", label: "Supported characters", icon: "help" },
-                { href: "./examples.html", label: "Browse examples", icon: "info" },
-                { href: "https://github.com/Mitra-88/MetalSlugFontRebornSolid2", label: "GitHub", icon: "commit" },
+                { href: "./examples.html", label: "Browse examples", icon: "image" },
+                { href: "https://github.com/Mitra-88/MetalSlugFontRebornSolid2", label: "GitHub", icon: "github" },
                 { href: "./license.html", label: "License", icon: "info" },
             ]}
         >
@@ -611,7 +611,7 @@ export default function Generator(): JSX.Element {
                     </Show>
 
                     <button type="button" class="btn btn-filled mt-4 w-full" onClick={download} disabled={status() !== "success"}>
-                        <Download size={18} />
+                        <AutoAwesome size={18} />
                         Download PNG
                     </button>
                 </section>

@@ -40,8 +40,8 @@ export default function License(): JSX.Element {
             back
             actions={<ThemeToggle />}
             links={[
-                { href: "./index.html", label: "Generator" },
-                { href: "./examples.html", label: "Browse examples", icon: "info" },
+                { href: "./index.html", label: "Generator", icon: "autoAwesome" },
+                { href: "./examples.html", label: "Browse examples", icon: "image" },
                 { href: "./supported.html", label: "Supported characters", icon: "help" },
             ]}
         >

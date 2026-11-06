@@ -30,9 +30,10 @@ export default function Supported(): JSX.Element {
             back
             actions={<ThemeToggle />}
             links={[
-                { href: "./index.html", label: "Generator" },
-                { href: "./examples.html", label: "Examples" },
-                { href: "https://github.com/Mitra-88/MetalSlugFontRebornSolid2", label: "GitHub" },
+                { href: "./index.html", label: "Generator", icon: "autoAwesome" },
+                { href: "./examples.html", label: "Examples", icon: "image" },
+                { href: "https://github.com/Mitra-88/MetalSlugFontRebornSolid2", label: "GitHub", icon: "github" },
+                { href: "./license.html", label: "License", icon: "info" },
             ]}
         >
             <header class="rise-in mb-6 max-w-2xl">

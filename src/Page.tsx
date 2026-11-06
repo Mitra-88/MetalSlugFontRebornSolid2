@@ -1,6 +1,6 @@
 import { For, Show, createEffect, createSignal, onSettled } from "solid-js";
 import type { JSX } from "@solidjs/web";
-import { ArrowLeft, Check, Commit, Help, Info, Moon, Palette, Sun } from "./lib/icons.tsx";
+import { ArrowLeft, AutoAwesome, Check, GitHub, Help, Image, Info, Moon, Palette, Sun } from "./lib/icons.tsx";
 import type { ColorName, FontId } from "./lib/fonts.ts";
 import { drawColorIcon, paletteFor } from "./lib/palette.ts";
 
@@ -242,15 +242,17 @@ export function AppBar(props: { back?: boolean | undefined; actions?: JSX.Elemen
 export interface FooterLink {
     href: string;
     label: string;
-    icon?: "help" | "info" | "commit" | undefined;
+    icon?: "autoAwesome" | "image" | "help" | "github" | "info" | undefined;
 }
 
-function FooterIcon(props: { icon: "help" | "info" | "commit" }): JSX.Element {
+function FooterIcon(props: { icon: "autoAwesome" | "image" | "help" | "github" | "info" }): JSX.Element {
     return (
         <span class="inline-flex align-middle">
+            {props.icon === "autoAwesome" && <AutoAwesome size={16} />}
+            {props.icon === "image" && <Image size={16} />}
             {props.icon === "help" && <Help size={16} />}
+            {props.icon === "github" && <GitHub size={16} />}
             {props.icon === "info" && <Info size={16} />}
-            {props.icon === "commit" && <Commit size={16} />}
         </span>
     );
 }
