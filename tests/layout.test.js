@@ -14,12 +14,11 @@ assert.equal(getCharPath("2", "gold", "7"), "./assets/fonts/font-2/ms-gold/numbe
 assert.equal(getCharPath("1", "blue", "!"), "./assets/fonts/font-1/ms-blue/symbols/Exclamation.png");
 assert.equal(getCharPath("1", "blue", "@"), null);
 assert.equal(getCharPath("1", "blue", " "), null);
-assert.equal(getCharPath("1", "blue", "é"), "./assets/fonts/font-1/ms-blue/symbols/E-3.png");
-assert.equal(getCharPath("2", "blue", "é"), "./assets/fonts/font-2/ms-blue/symbols/E-4.png", "per-font override for font 2");
+assert.equal(getCharPath("1", "blue", "é"), null);
+assert.equal(getCharPath("2", "blue", "é"), null);
 assert.equal(getCharPath("1", "blue", "Ⅳ"), null);
-assert.equal(getCharPath("2", "blue", "Ⅳ"), "./assets/fonts/font-2/ms-blue/symbols/Four.png");
-assert.equal(getCharPath("1", "blue", "ā"), "./assets/fonts/font-1/ms-blue/symbols/A-3.png");
-assert.equal(getCharPath("2", "blue", "ā"), null, "font 2 has no macron glyph");
+assert.equal(getCharPath("2", "blue", "Ⅳ"), null);
+assert.equal(getCharPath("1", "blue", "ā"), null);
 
 assert.equal(isCharSupported("5", "a"), false);
 assert.equal(isCharSupported("5", "A"), true);
@@ -29,19 +28,19 @@ assert.equal(isCharSupported("5", "!"), true);
 assert.equal(isCharSupported("5", "?"), true);
 assert.equal(isCharSupported("5", ","), false);
 assert.equal(isCharSupported("1", "♥"), true);
-assert.equal(isCharSupported("1", "é"), true);
-assert.equal(isCharSupported("2", "é"), true);
+assert.equal(isCharSupported("1", "é"), false);
+assert.equal(isCharSupported("2", "é"), false);
 assert.equal(isCharSupported("3", "é"), false);
 assert.equal(isCharSupported("2", "ā"), false);
-assert.equal(isCharSupported("2", "Ⅳ"), true);
+assert.equal(isCharSupported("2", "Ⅳ"), false);
 assert.equal(isCharSupported("1", "Ⅳ"), false);
 assert.equal(isCharSupported("1", "@"), false);
 
 assert.deepEqual(collectUnsupported("5", "hello!"), ["h", "e", "l", "o"]);
 assert.deepEqual(collectUnsupported("5", "HELLO!"), []);
 assert.deepEqual(collectUnsupported("1", "ok @ß@"), ["@", "ß"]);
-assert.deepEqual(collectUnsupported("1", "café"), []);
-assert.deepEqual(collectUnsupported("2", "café"), []);
+assert.deepEqual(collectUnsupported("1", "café"), ["é"]);
+assert.deepEqual(collectUnsupported("2", "café"), ["é"]);
 assert.deepEqual(collectUnsupported("3", "café"), ["é"]);
 assert.deepEqual(collectUnsupported("1", "ok"), []);
 
@@ -80,9 +79,9 @@ const skippedLayout = computeLayout(["a@b"], measure, "1", "blue");
 assert.equal(skippedLayout.width, 20, "unsupported characters are skipped, not fatal");
 assert.equal(skippedLayout.lines[0].chars.length, 2);
 
-const crossFont = computeLayout(["Ⅳa"], measure, "1", "blue");
+const crossFont = computeLayout(["♪a"], measure, "1", "blue");
 assert.equal(crossFont.width, 10, "characters from another font's set are skipped, never loaded cross-font");
-assert.deepEqual(collectUnsupported("1", "Ⅳa"), ["Ⅳ"]);
+assert.deepEqual(collectUnsupported("1", "♪a"), ["♪"]);
 
 assert.equal(computeLayout(["hi", "x"], () => null, "1", "blue"), null, "supported but missing sprites still abort the layout");
 

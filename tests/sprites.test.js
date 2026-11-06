@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readdirSync } from "node:fs";
 import { join } from "node:path";
-import { FONT_SUPPORT, getCharPath } from "../src/lib/fonts.ts";
+import { FONT_SUPPORT, UNUSED_SYMBOLS, getCharPath } from "../src/lib/fonts.ts";
 
 const ROOT = join(import.meta.dirname, "..");
 const FONTS_DIR = join(ROOT, "public", "assets", "fonts");
@@ -68,8 +68,12 @@ for (const fontId of Object.keys(FONT_SUPPORT)) {
             expectedSymbolFiles.add(file);
             if (!symbols.has(file)) problems.push(`${label}: symbol '${sym}' (${file}.png) declared but no sprite`);
         }
+        const unusedFiles = new Set(Object.values(UNUSED_SYMBOLS[fontId] ?? {}));
+        for (const file of unusedFiles) {
+            if (!symbols.has(file)) problems.push(`${label}: unused symbol ${file}.png has no sprite`);
+        }
         for (const file of symbols) {
-            if (!expectedSymbolFiles.has(file)) problems.push(`${label}: sprite ${file}.png exists but is NOT declared as supported`);
+            if (!expectedSymbolFiles.has(file) && !unusedFiles.has(file)) problems.push(`${label}: sprite ${file}.png exists but is NOT declared as supported or unused`);
         }
         for (const file of lower) if (!support.lowerCase) problems.push(`${label}: lowercase sprite ${file}.png exists but lowercase is not declared`);
         for (const file of upper) if (!support.upperCase) problems.push(`${label}: uppercase sprite ${file}.png exists but uppercase is not declared`);

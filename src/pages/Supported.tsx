@@ -1,12 +1,12 @@
 import { For, Show } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { ColorDot, Page, ThemeToggle, capitalize } from "../Page.tsx";
-import { FONT_SUPPORT } from "../lib/fonts.ts";
+import { FONT_SUPPORT, UNUSED_SYMBOLS } from "../lib/fonts.ts";
 import type { ColorName, FontId } from "../lib/fonts.ts";
 
 const FONTS: FontId[] = ["1", "2", "3", "4", "5"];
-const NEVER_SUPPORTED = "è ē ì î ï ù û and uppercase accented letters (À É Ô ...)";
-const ROMAN = ["Ⅰ", "Ⅱ", "Ⅲ", "Ⅳ", "Ⅴ"];
+const UNUSED = [...new Set(Object.values(UNUSED_SYMBOLS).flatMap((m) => Object.keys(m)))].join(" ");
+const NO_SPRITES = "è ē ì î ï ù û and uppercase accented letters (À É Ô ...)";
 
 interface SupportRow {
     label: string;
@@ -81,10 +81,9 @@ export default function Supported(): JSX.Element {
                 </For>
 
                 <section class="rise-in rounded-card bg-error-container p-5 text-on-error-container md:col-span-2">
-                    <h2 class="text-title-m">No sprites in any font</h2>
+                    <h2 class="text-title-m">Unsupported characters</h2>
                     <p class="mt-2 text-body-m">
-                        {NEVER_SUPPORTED} have no sprites anywhere, so they are always skipped. Accented lowercase letters exist only in Font 1,
-                        Roman numerals {ROMAN.join(" ")} only in Font 2. Anything a font does not list is skipped automatically while the rest of your text still renders.
+                        {UNUSED} have sprites but are unused, so they are skipped. {NO_SPRITES} have no sprites in any font. Anything a font does not list is skipped automatically while the rest of your text still renders.
                     </p>
                 </section>
             </div>

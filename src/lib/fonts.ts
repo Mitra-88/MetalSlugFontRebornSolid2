@@ -54,35 +54,48 @@ const SPECIAL_CHARACTERS: Record<string, string> = {
     "♪": "Musical-Note",
     "︷": "Up-Arrow",
     "✖": "Cross",
-    "ȧ": "A-1",
-    "ä": "A-2",
-    "ā": "A-3",
-    "á": "A-4",
-    "à": "A-5",
-    "â": "A-6",
-    "ã": "A-7",
-    "ė": "E-1",
-    "ë": "E-2",
-    "é": "E-3",
-    "ê": "E-5",
-    "í": "I-1",
-    "ö": "O-1",
-    "ō": "O-2",
-    "ó": "O-3",
-    "ô": "O-4",
-    "õ": "O-5",
-    "ü": "U-1",
-    "ū": "U-2",
-    "ú": "U-3",
-    "Ⅰ": "One",
-    "Ⅱ": "Two",
-    "Ⅲ": "Three",
-    "Ⅳ": "Four",
-    "Ⅴ": "Five",
 };
 
-const FONT_SYMBOL_OVERRIDES: Partial<Record<FontId, Record<string, string>>> = {
-    2: { "á": "A-3", "é": "E-4", "ú": "U-4" },
+export const UNUSED_SYMBOLS: Partial<Record<FontId, Record<string, string>>> = {
+    1: {
+        "ȧ": "A-1",
+        "ä": "A-2",
+        "ā": "A-3",
+        "á": "A-4",
+        "à": "A-5",
+        "â": "A-6",
+        "ã": "A-7",
+        "ė": "E-1",
+        "ë": "E-2",
+        "é": "E-3",
+        "ê": "E-5",
+        "í": "I-1",
+        "ö": "O-1",
+        "ō": "O-2",
+        "ó": "O-3",
+        "ô": "O-4",
+        "õ": "O-5",
+        "ü": "U-1",
+        "ū": "U-2",
+        "ú": "U-3",
+    },
+    2: {
+        "ȧ": "A-1",
+        "ä": "A-2",
+        "á": "A-3",
+        "ė": "E-1",
+        "ë": "E-2",
+        "é": "E-4",
+        "ö": "O-1",
+        "ü": "U-1",
+        "ū": "U-2",
+        "ú": "U-4",
+        "Ⅰ": "One",
+        "Ⅱ": "Two",
+        "Ⅲ": "Three",
+        "Ⅳ": "Four",
+        "Ⅴ": "Five",
+    },
 };
 
 export const SPACE_WIDTH = 25;
@@ -97,14 +110,14 @@ export const FONT_SUPPORT: Record<FontId, FontSupport> = {
         lowerCase: true,
         upperCase: true,
         numbers: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
-        symbols: [",", "*", "{", "}", "(", ")", "[", "]", "'", "^", ":", "$", "=", "!", ">", "-", "∞", "<", "#", "%", ".", "+", "&", "?", '"', ";", "/", "~", "_", "|", "¥", "⛶", "©", "♥", "▲", "▼", "◀", "▶", "⋆", "★", "☞", "✖", "ȧ", "ä", "ā", "á", "à", "â", "ã", "ė", "ë", "é", "ê", "í", "ö", "ō", "ó", "ô", "õ", "ü", "ū", "ú"]
+        symbols: [",", "*", "{", "}", "(", ")", "[", "]", "'", "^", ":", "$", "=", "!", ">", "-", "∞", "<", "#", "%", ".", "+", "&", "?", '"', ";", "/", "~", "_", "|", "¥", "⛶", "©", "♥", "▲", "▼", "◀", "▶", "⋆", "★", "☞", "✖"]
     },
     2: {
         colors: ["blue", "orange", "gold"],
         lowerCase: true,
         upperCase: true,
         numbers: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
-        symbols: [",", "=", "︷", "!", "-", ".", "+", "&", "?", "/", "♪", "✖", "ȧ", "ä", "á", "ė", "ë", "é", "ö", "ü", "ū", "ú", "Ⅰ", "Ⅱ", "Ⅲ", "Ⅳ", "Ⅴ"]
+        symbols: [",", "=", "︷", "!", "-", ".", "+", "&", "?", "/", "♪", "✖"]
     },
     3: {
         colors: ["blue", "orange"],
@@ -143,7 +156,7 @@ export function getCharPath(font: FontId, color: ColorName, char: string): strin
     if (char >= "a" && char <= "z") return `${base}/letters/lower-case/${char}.png`;
     if (char >= "A" && char <= "Z") return `${base}/letters/upper-case/${char}.png`;
     if (char >= "0" && char <= "9") return `${base}/numbers/${char}.png`;
-    const name = FONT_SYMBOL_OVERRIDES[font]?.[char] ?? SPECIAL_CHARACTERS[char];
+    const name = SPECIAL_CHARACTERS[char];
     return name ? `${base}/symbols/${name}.png` : null;
 }
 
