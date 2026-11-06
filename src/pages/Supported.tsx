@@ -50,7 +50,7 @@ export default function Supported(): JSX.Element {
                                 <h2 class="text-title-m">Font {n}</h2>
                                 <span
                                     class="chip-static chip-gradient shrink-0"
-                                    style={{ "--chip-gradient": `linear-gradient(100deg, ${FONT_SUPPORT[n].colors.map((c) => COLOR_HEX[c]).join(", ")})` }}
+                                    style={{ "--chip-gradient": `linear-gradient(100deg, ${FONT_SUPPORT[n].colors.map((c) => COLOR_HEX[c]).join(", ")}, ${FONT_SUPPORT[n].colors.map((c) => COLOR_HEX[c]).join(", ")})` }}
                                     title={FONT_SUPPORT[n].colors.map((c) => capitalize(c)).join(", ")}
                                 >
                                     {FONT_SUPPORT[n].colors.length} {FONT_SUPPORT[n].colors.length === 1 ? "color" : "colors"}
