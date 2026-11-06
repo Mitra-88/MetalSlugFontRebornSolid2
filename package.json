@@ -28,10 +28,10 @@
     "solid-js": "^2.0.0-rc.21"
   },
   "devDependencies": {
-    "@solidjs/vite-plugin": "^3.0.0-next.56",
-    "@tailwindcss/vite": "^4.3.4",
+    "@solidjs/vite-plugin": "^3.0.0-next.57",
+    "@tailwindcss/vite": "^4.3.5",
     "@types/node": "^26.6.6",
-    "tailwindcss": "^4.3.4",
+    "tailwindcss": "^4.3.5",
     "typescript": "^7.0.2",
     "vite": "^8.3.6",
     "wrangler": "^4.158.0"
