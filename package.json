@@ -8,6 +8,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build:static": "bun run build && bun run compress",
+    "compress": "bun scripts/precompress.ts",
     "preview": "vite preview",
     "test": "bun tests/layout.test.ts && bun tests/perf.test.ts && bun tests/sprites.test.ts && bun tests/palette.test.ts && bun tests/behavior.test.ts",
     "typecheck": "tsc --noEmit"

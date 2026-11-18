@@ -59,6 +59,16 @@ Find your PC address with `ipconfig`, then open `http://[IP_ADDRESS]:5174/` on t
 
 The site runs as a Worker with static assets. Connect the repo in Workers Builds and run `bun run build` then `bunx wrangler deploy`. Settings live in `wrangler.jsonc`. Caching and security headers live in `public/_headers`. Hashed bundles and fonts are cached forever, sprites and example images keep their stable names and are cached for 30 days. Set `BUN_VERSION=1.4.4` in build settings.
 
+## Other static hosts
+
+Cloudflare negotiates zstd, brotli and gzip on its own, so nothing else is needed there. Hosts that only serve files need precompressed siblings:
+
+```
+bun run build:static
+```
+
+That writes a `.zst` and a `.gz` next to every HTML, JS, CSS, JSON, SVG, TXT and manifest file (12 of 12 here, 180 KB down to 59 KB with zstd). The server then picks zstd first and gzip second: nginx with `zstd_static on;` plus `gzip_static on;`, Caddy with `precompressed zstd gzip`. Do not run this for Cloudflare, which compresses at the edge already.
+
 ## Checks
 
 ```
