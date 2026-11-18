@@ -24,9 +24,9 @@
   },
   "homepage": "https://github.com/Mitra-88/MetalSlugFontRebornSolid2#readme",
   "dependencies": {
-    "@solidjs/web": "^2.0.0",
+    "@solidjs/web": "^2.0.1",
     "current-device": "2.6.0",
-    "solid-js": "^2.0.0"
+    "solid-js": "^2.0.1"
   },
   "devDependencies": {
     "@solidjs/vite-plugin": "^3.0.1",
