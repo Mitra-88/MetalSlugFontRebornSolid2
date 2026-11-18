@@ -10,7 +10,7 @@ Stack: Solid 2.0 RC, TypeScript, Vite 8 MPA with three HTML entries, Tailwind CS
 
 - Bun 1.4.4. `bun install` once. `bun.lock` is committed. `node_modules/` is required but disposable: `bun install --frozen-lockfile` restores it.
 - `bun run dev` on port 5173, `bun run build`, `bun run build:static`, `bun run preview`, `bun run typecheck`, `bun run test`, `bun outdated`, `bunx wrangler deploy --dry-run`.
-- `bun run build:static` is `build` plus `bun run compress`, which writes `.zst` and `.gz` siblings next to text files in `dist/` for hosts that serve files. It skips what is already compressed and verifies every output by decompressing it. Never use it for the Cloudflare build, which compresses at the edge.
+- `bun run build:static` is `build` plus `bun run compress`, which writes lossless `.zst` (level 19) and `.gz` (level 9) siblings next to text files in `dist/` for hosts that serve files. Level 22 was measured byte-identical here. It skips formats that are already compressed (`.woff2`, `.png`) so fonts and sprites are never rewritten, and it verifies every output by decompressing it and comparing bytes. Never use it for the Cloudflare build, which compresses at the edge.
 - `bun run test` runs five assert-based self-checks with no test framework: `layout`, `perf`, `sprites`, `palette`, `behavior`. Run one with `bun tests/sprites.test.ts`. Never use `bun test`.
 - Gate is `typecheck` plus `test` plus `build`. Run in that order before committing.
 - TypeScript 7 is the compiler behind `tsc`. `@types/node` stays because `vite.config.ts` and the tests use `node:` builtins. `tsconfig.json` is strict and covers `src`, `tests`, and `vite.config.ts`.

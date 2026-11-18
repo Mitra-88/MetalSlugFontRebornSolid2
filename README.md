@@ -69,6 +69,8 @@ bun run build:static
 
 That writes a `.zst` and a `.gz` next to every HTML, JS, CSS, JSON, SVG, TXT and manifest file (12 of 12 here, 180 KB down to 59 KB with zstd). The server then picks zstd first and gzip second: nginx with `zstd_static on;` plus `gzip_static on;`, Caddy with `precompressed zstd gzip`. Do not run this for Cloudflare, which compresses at the edge already.
 
+Both formats are lossless and every file is decompressed and compared byte for byte after writing, so the browser receives the exact original bytes. Compression runs at the maximum useful level: gzip 9, zstd 19 (level 22 produced byte-identical output on these files). Fonts (`.woff2`) and sprites (`.png`) are already compressed and are never rewritten; they are served as they are.
+
 ## Checks
 
 ```
